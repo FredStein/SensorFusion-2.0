@@ -1,0 +1,566 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:label="@string/app_name"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:columnCount="9"
+    android:rowCount = "16"
+    android:background="@color/colorPrimaryDark"
+    tools:context="com.fred.tandq.SensorActivity">
+
+    <TextView
+        android:id="@+id/A"
+        android:text="@string/Accel_group"
+        android:layout_column="0"
+        android:layout_row="0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginLeft="16dp"
+        tools:ignore="RtlHardcoded" />
+
+    <TextView
+        android:id="@+id/AXAxis"
+        android:text="@string/X"
+        android:layout_column="1"
+        android:layout_row="0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Ax"
+        android:text="0"
+        android:layout_column="2"
+        android:layout_row="0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/AYAxis"
+        android:text="@string/Y"
+        android:layout_column="3"
+        android:layout_row="0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Ay"
+        android:text="0"
+        android:layout_column="4"
+        android:layout_row="0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginLeft="16dp"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/AZAxis"
+        android:text="@string/Z"
+        android:layout_column="5"
+        android:layout_row="0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Az"
+        android:text="0"
+        android:layout_column="6"
+        android:layout_row="0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/G"
+        android:text="@string/Gyro_group"
+        android:layout_column="0"
+        android:layout_row="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/GXAxis"
+        android:text="@string/Phi"
+        android:layout_column="1"
+        android:layout_row="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Gx"
+        android:text="0"
+        android:layout_column="2"
+        android:layout_row="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/GYAxis"
+        android:text="@string/Theta"
+        android:layout_column="3"
+        android:layout_row="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Gy"
+        android:text="0"
+        android:layout_column="4"
+        android:layout_row="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/GZAxis"
+        android:text="@string/Psi"
+        android:layout_column="5"
+        android:layout_row="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Gz"
+        android:text="0"
+        android:layout_column="6"
+        android:layout_row="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/LA"
+        android:text="@string/LA"
+        android:layout_column="0"
+        android:layout_row="2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/LAXAxis"
+        android:text="@string/X"
+        android:layout_column="1"
+        android:layout_row="2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/LAx"
+        android:text="0"
+        android:layout_column="2"
+        android:layout_row="2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/LAYAxis"
+        android:text="@string/Y"
+        android:layout_column="3"
+        android:layout_row="2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/LAy"
+        android:text="0"
+        android:layout_column="4"
+        android:layout_row="2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/LAZAxis"
+        android:text="@string/Z"
+        android:layout_column="5"
+        android:layout_row="2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/LAz"
+        android:text="0"
+        android:layout_column="6"
+        android:layout_row="2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/Grav"
+        android:text="@string/Gravity"
+        android:layout_column="0"
+        android:layout_row="3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/GravXAxis"
+        android:text="@string/X"
+        android:layout_column="1"
+        android:layout_row="3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Gravx"
+        android:text="0"
+        android:layout_column="2"
+        android:layout_row="3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/GravYAxis"
+        android:text="@string/Y"
+        android:layout_column="3"
+        android:layout_row="3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Gravy"
+        android:text="0"
+        android:layout_column="4"
+        android:layout_row="3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/GravZAxis"
+        android:text="@string/Z"
+        android:layout_column="5"
+        android:layout_row="3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Gravz"
+        android:text="0"
+        android:layout_column="6"
+        android:layout_row="3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:layout_marginTop="8dp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/R"
+        android:text="@string/Rotation"
+        android:layout_column="0"
+        android:layout_row="4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/RXAxis"
+        android:text="@string/Phi"
+        android:layout_column="1"
+        android:layout_row="4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Rx"
+        android:text="0"
+        android:layout_column="2"
+        android:layout_row="4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/RYAxis"
+        android:text="@string/Theta"
+        android:layout_column="3"
+        android:layout_row="4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Ry"
+        android:text="0"
+        android:layout_column="4"
+        android:layout_row="4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/RZAxis"
+        android:text="@string/Psi"
+        android:layout_column="5"
+        android:layout_row="4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Rz"
+        android:text="0"
+        android:layout_column="6"
+        android:layout_row="4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/RMag"
+        android:text="@string/W"
+        android:layout_column="1"
+        android:layout_row="5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Rw"
+        android:text="0"
+        android:layout_column="2"
+        android:layout_row="5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/RHdgErr"
+        android:text="@string/Err"
+        android:layout_column="3"
+        android:layout_row="5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Rr"
+        android:text="0"
+        android:layout_column="4"
+        android:layout_row="5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="16dp" />
+
+    <TextView
+        android:id="@+id/Distance"
+        android:text="@string/Distance"
+        android:layout_column="0"
+        android:layout_row="6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/USBr"
+        android:text="0"
+        android:layout_column="1"
+        android:layout_row="6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="16dp"/>
+
+
+    <TextView
+        android:id="@+id/dUnits"
+        android:text="@string/dUnits"
+        android:layout_column="2"
+        android:layout_row="6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="1dp"/>
+
+    <TextView
+        android:id="@+id/Dts"
+        android:text="@string/Time"
+        android:layout_column="4"
+        android:layout_row="6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="32dp"
+        android:layout_marginLeft="16dp"/>
+
+    <TextView
+        android:id="@+id/time"
+        android:text="0"
+        android:layout_column="5"
+        android:layout_columnSpan="4"
+        android:layout_row="6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@android:color/holo_blue_light"
+        android:layout_marginTop="32dp"
+        android:layout_marginLeft="16dp"
+        android:onClick="displaySensors"/>
+
+    <ToggleButton
+        android:id="@+id/DisplayData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_column="0"
+        android:layout_columnSpan="3"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="24dp"
+        android:layout_row="7"
+        android:textOff="@string/StartDisplay"
+        android:textOn="@string/StopDisplay"
+        android:onClick="upDateDisplay"/>
+
+
+    <ToggleButton
+        android:id="@+id/SendData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_column="3"
+        android:layout_columnSpan="4"
+        android:layout_marginTop="24dp"
+        android:layout_marginLeft="16dp"
+        android:layout_row="7"
+        android:textOff="@string/StartSend"
+        android:textOn="@string/StopSend"
+        android:onClick="sendXML"/>
+
+</GridLayout>

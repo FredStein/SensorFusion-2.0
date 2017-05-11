@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@color/colorPrimaryDark">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/sButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="goDisplay"
+                android:text="@string/button_sensors"
+                android:layout_marginTop="16sp"
+                android:layout_centerHorizontal="true"/>
+
+            <TextView
+                android:id="@+id/sp"
+                android:text="Sensors Present"
+                android:layout_below="@id/sButton"
+                android:textColor="@android:color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:layout_marginTop="16sp"
+                android:background="#ff669900"
+                android:layout_marginLeft="32sp"
+                android:layout_alignParentLeft="true"/>
+
+            <TextView
+                android:id="@+id/sa"
+                android:text="Sensors Absent"
+                android:layout_below="@id/sButton"
+                android:textColor="@android:color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:layout_marginTop="16sp"
+                android:background="#ffff4444"
+                android:layout_marginLeft="16sp"
+                android:layout_toRightOf="@id/sp"/>
+
+        </RelativeLayout>
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0.75">
+        <fragment
+            android:id="@+id/SettingsFrag"
+            android:name="com.fred.tandq.MainActivity$SettingsFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            tools:layout="@layout/settings_frag" />
+    </FrameLayout>
+</LinearLayout>

@@ -1,0 +1,43 @@
+<resources>
+    <string name="app_name">Sensor Node</string>
+    <string name="button_sensors">Display Sensor Values</string>
+    <string name="sensors_present">Sensors Present</string>
+    <string name="sensors_absent">Sensors Absent</string>
+    <string name="noSensors">None of the requested sensors present\nCannot proceede</string>
+    <string name="present">"Requested sensors present"</string>
+    <string name="absent">"Some sensors not available\nReduced function"</string>
+    <string name="Accel_group">Accelerometer</string>
+    <string name="Gyro_group">Gyroscope</string>
+    <string name="LA">Linear\nAcceleration</string>
+    <string name="Gravity">Gravity</string>
+    <string name="Rotation">Rotation</string>
+    <string name="X">"X: "</string>
+    <string name="Y">"Y: "</string>
+    <string name="Z">"Z: "</string>
+    <string name="W">"W: "</string>
+    <string name="R">"R: "</string>
+    <string name="Err">"HErr: "</string>
+    <string name="Phi">"\u03C6: "</string>
+    <string name="Theta">"\u03B8: "</string>
+    <string name="Psi">"\u03C8: "</string>
+    <string name="Distance">"Distance: "</string>
+    <string name="dUnits">m</string>
+    <string name="Time">"Time: "</string>
+    <string name="StartSend">"Start Sending UDP"</string>
+    <string name="StopSend">"Stop Sending UDP"</string>
+    <string name="StartDisplay">"Start Display"</string>
+    <string name="StopDisplay">"Stop Display Update"</string>
+    <string name="SENSOR_Accelerometer">SENSOR_TYPE_ACCELEROMETER</string>
+    <string name="SENSOR_Gyro">SENSOR_TYPE_GYROSCOPE</string>
+    <string name="SENSOR_Linear_Accel">SENSOR_TYPE_LINEAR_ACCELERATION</string>
+    <string name="SENSOR_Gravity">SENSOR_TYPE_GRAVITY</string>
+    <string name="SENSOR_Rotation">SENSOR_TYPE_ROTATION_VECTOR</string>
+    <string name="defaultNodeID">FS</string>
+    <string name="defaultHubIP">192.168.178.21</string>
+    <string name="defaultPort">50000</string>
+    <string name="defaultSample_Freq">20</string>
+    <string name="defaultReport_Freq">500</string>
+    <string name="nodeSettings">Click to change Node Settings</string>
+    <string name="DisplayValues">Sensor Values</string>
+
+</resources>

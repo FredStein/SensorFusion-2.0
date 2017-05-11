@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer-array name="S_TYPE">
+        <item>1</item>
+        <item>4</item>
+        <item>10</item>
+        <item>9</item>
+        <item>11</item>
+        <item>20000</item>
+    </integer-array>
+    <string-array name="S_NAME">
+        <item>Accelerometer</item>
+        <item>Gyroscope</item>
+        <item>Linear Acceleration</item>
+        <item>Gravity</item>
+        <item>Rotation Vector</item>
+        <item>USB</item>
+    </string-array>
+    <string-array name="S_ABB">
+        <item>A</item>
+        <item>G</item>
+        <item>LA</item>
+        <item>Grav</item>
+        <item>R</item>
+        <item>USB</item>
+    </string-array>
+    <string-array name="S_VAR">
+        <item>x</item>
+        <item>y</item>
+        <item>z</item>
+        <item>w</item>
+        <item>r</item>
+    </string-array>
+</resources>
+
+<!--
+Sensors this App is seeking for full functionality
+Short names for the variables delivered
+x,y,z are also aliases for phi, theta, psi where appropriate
+r = cos theta/2
+r = error
+
+1   SENSOR_TYPE_ACCELEROMETER           m/s^2
+4   SENSOR_TYPE_GYROSCOPE               r/s
+10  SENSOR_TYPE_LINEAR_ACCELERATION     m/s^2(?) (Device coordinates?)
+9   SENSOR_TYPE_GRAVITY                 r, theta m/s^2 (Device coordinates?)
+11  SENSOR_TYPE_ROTATION_VECTOR         unitless World coordinates?
+-->
