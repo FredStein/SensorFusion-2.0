@@ -56,7 +56,7 @@ class XMLAggregator implements Runnable {
                         }
                     }
 
-                    
+
 
                     for (String item: msgStack.keySet()){
                         if (msgStack.get(item).isComplete()){
