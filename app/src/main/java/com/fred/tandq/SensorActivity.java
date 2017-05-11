@@ -96,7 +96,6 @@ public class SensorActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         startService(new Intent(this, SensorService.class));
-
     }
 
     @Override

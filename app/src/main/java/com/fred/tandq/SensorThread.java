@@ -42,12 +42,12 @@ class SensorThread implements Runnable {
     private int sensorType;
     private SensorActivity.sensorHandler sHandler;
     private dataQWriter dataQW;
-    private int counts = 1;
-    private float[] acc;
     private SensorManager sM;
     private Sensor sensor;
     private SensorEventListener mListener;
     private long mEpoch;
+    private int counts = 1;
+    private float[] acc;
 
     SensorThread(LinkedBlockingQueue sDataQ, final int sensorType, Context mContext ) {
         this.sensorType = sensorType;
@@ -153,7 +153,7 @@ class SensorThread implements Runnable {
         @Override
         public void run() {                                                             //TODO Need thread stop condition
             if (mLogging) {
-                String logString = " dataQWriter up";
+                String logString = " dataQWriter started";
                 Log.v(TAG, logString);
             }
         }

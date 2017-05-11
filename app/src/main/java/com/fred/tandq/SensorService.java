@@ -5,7 +5,6 @@ import android.content.Intent;
 
 import android.os.IBinder;
 
-import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
