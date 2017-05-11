@@ -2,7 +2,6 @@ package com.fred.tandq;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -48,6 +47,10 @@ class appState {
     public static List getTextViewCodes(Integer sensorType ) {
         return textViewCodes.get(sensorType);
     }
+    private static HashMap<String, Integer> sTypeIdx;
+    public static Integer getSensorType(String sensorName) {
+        return sTypeIdx.get(sensorName);
+    }
     public static String[] varNames;
     public static String nodeID;
     public static long tickLength;                              //In milliseconds
@@ -60,7 +63,7 @@ class appState {
     public static boolean displayOn = false;
 
 
-    public int initNode(Context mContext, View view) {          //TODO: Get sendor data lengths here
+    public int initNode(Context mContext, View view) {
         sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
         tickLength = Long.parseLong(sharedPref.getString("reportFrequency",mContext.getString(R.string.defaultReport_Freq)));
         halfTick = tickLength / 2;
@@ -81,9 +84,13 @@ class appState {
         String[] resAbb = AppRes.getStringArray(R.array.S_ABB);
 
         HashMap<Integer,String> sNameIdx = new HashMap<>();
+        HashMap<String,Integer> sTypeIdx = new HashMap<>();
         for (int i=0; i < resTypes.length; i++){
             sNameIdx.put(resTypes[i],resNames[i]);
+            sTypeIdx.put(resNames[i],resTypes[i]);
         }
+        this.sTypeIdx = sTypeIdx;
+
         HashMap<Integer,String> sAbbIdx = new HashMap<>();
         for (int i=0; i < resTypes.length; i++){
             sAbbIdx.put(resTypes[i],resAbb[i]);

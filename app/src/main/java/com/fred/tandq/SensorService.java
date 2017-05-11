@@ -19,26 +19,24 @@ public class SensorService extends Service {
     private static boolean mLogging = false;
 
     private Set<Integer> sensors;
-    private static LinkedBlockingQueue[] sDataQ;
-    public static HashMap<Integer, LinkedBlockingQueue> udpDataQ = new HashMap<>();
+    private static LinkedBlockingQueue sDataQ;
     private static SensorThread[] sensorThreads;
     private static XMLAggregator XMLC;
 
     @Override
     public void onCreate() {
         sensors = appState.getSensors();
-        sDataQ = new LinkedBlockingQueue[sensors.size()];
+        sDataQ = new LinkedBlockingQueue();
         sensorThreads = new SensorThread[sensors.size()];
         int i = 0;
         for (Integer item : sensors){
             if (item != TYPE_USB) {                                                         //TODO: May be possible to start USB thread here but will need to check connectivity first
-                sDataQ[i] = new LinkedBlockingQueue();
-                udpDataQ.put(item, sDataQ[i]);
-                sensorThreads[i] = new SensorThread(sDataQ[i], item, this);
+                sDataQ = new LinkedBlockingQueue();
+                sensorThreads[i] = new SensorThread(sDataQ, item, this);
                 i += 1;
             }
         }
-        XMLC = new XMLAggregator(udpDataQ);
+        XMLC = new XMLAggregator(sDataQ);
     }
 
     @Override

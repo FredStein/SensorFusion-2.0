@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/Ax"
@@ -42,7 +42,7 @@
         android:layout_height="wrap_content"
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="6dp" />
 
     <TextView
         android:id="@+id/AYAxis"
@@ -53,7 +53,7 @@
         android:layout_height="wrap_content"
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/Ay"
@@ -64,7 +64,7 @@
         android:layout_height="wrap_content"
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
-        android:layout_marginLeft="16dp"
+        android:layout_marginLeft="6dp"
         tools:ignore="HardcodedText" />
 
     <TextView
@@ -76,7 +76,7 @@
         android:layout_height="wrap_content"
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/Az"
@@ -87,7 +87,7 @@
         android:layout_height="wrap_content"
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="6dp" />
 
     <TextView
         android:id="@+id/G"
@@ -110,8 +110,8 @@
         android:layout_height="wrap_content"
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
-        android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginTop="6dp"
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/Gx"
@@ -123,7 +123,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="6dp" />
 
     <TextView
         android:id="@+id/GYAxis"
@@ -135,7 +135,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/Gy"
@@ -147,7 +147,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp"/>
+        android:layout_marginLeft="6dp"/>
 
     <TextView
         android:id="@+id/GZAxis"
@@ -159,7 +159,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/Gz"
@@ -170,8 +170,8 @@
         android:layout_height="wrap_content"
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
-        android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp"/>
+        android:layout_marginTop="6dp"
+        android:layout_marginLeft="6dp"/>
 
     <TextView
         android:id="@+id/LA"
@@ -195,7 +195,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/LAx"
@@ -207,7 +207,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp"/>
+        android:layout_marginLeft="6dp"/>
 
     <TextView
         android:id="@+id/LAYAxis"
@@ -219,7 +219,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/LAy"
@@ -231,7 +231,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp"/>
+        android:layout_marginLeft="6dp"/>
 
     <TextView
         android:id="@+id/LAZAxis"
@@ -243,7 +243,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/LAz"
@@ -255,7 +255,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp"/>
+        android:layout_marginLeft="6dp"/>
 
     <TextView
         android:id="@+id/Grav"
@@ -279,7 +279,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/Gravx"
@@ -291,7 +291,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp"/>
+        android:layout_marginLeft="6dp"/>
 
     <TextView
         android:id="@+id/GravYAxis"
@@ -303,7 +303,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/Gravy"
@@ -315,7 +315,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp"/>
+        android:layout_marginLeft="6dp"/>
 
     <TextView
         android:id="@+id/GravZAxis"
@@ -327,7 +327,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/Gravz"
@@ -339,7 +339,7 @@
         android:textSize="12sp"
         android:layout_marginTop="8dp"
         android:textColor="@android:color/holo_blue_light"
-        android:layout_marginLeft="16dp"/>
+        android:layout_marginLeft="6dp"/>
 
     <TextView
         android:id="@+id/R"
@@ -363,7 +363,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/Rx"
@@ -375,7 +375,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp"/>
+        android:layout_marginLeft="6dp"/>
 
     <TextView
         android:id="@+id/RYAxis"
@@ -387,7 +387,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/Ry"
@@ -399,7 +399,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="6dp" />
 
     <TextView
         android:id="@+id/RZAxis"
@@ -411,7 +411,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/Rz"
@@ -423,7 +423,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp"/>
+        android:layout_marginLeft="6dp"/>
 
     <TextView
         android:id="@+id/RMag"
@@ -435,7 +435,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/Rw"
@@ -447,7 +447,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp"/>
+        android:layout_marginLeft="6dp"/>
 
     <TextView
         android:id="@+id/RHdgErr"
@@ -459,7 +459,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="8dp" />
 
     <TextView
         android:id="@+id/Rr"
@@ -471,7 +471,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="16dp" />
+        android:layout_marginLeft="6dp" />
 
     <TextView
         android:id="@+id/Distance"
@@ -495,7 +495,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/white"
         android:layout_marginTop="16dp"
-        android:layout_marginLeft="16dp"/>
+        android:layout_marginLeft="8dp"/>
 
 
     <TextView
@@ -533,7 +533,7 @@
         android:textSize="12sp"
         android:textColor="@android:color/holo_blue_light"
         android:layout_marginTop="32dp"
-        android:layout_marginLeft="16dp"
+        android:layout_marginLeft="8dp"
         android:onClick="displaySensors"/>
 
     <ToggleButton

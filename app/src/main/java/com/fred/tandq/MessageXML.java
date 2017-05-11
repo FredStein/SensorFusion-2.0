@@ -1,5 +1,7 @@
 package com.fred.tandq;
 
+import android.util.Log;
+
 import java.util.HashMap;
 import java.util.Set;
 
@@ -10,6 +12,7 @@ import static android.hardware.Sensor.TYPE_LINEAR_ACCELERATION;
 import static android.hardware.Sensor.TYPE_ROTATION_VECTOR;
 import static com.fred.tandq.appState.TYPE_USB;
 import static com.fred.tandq.appState.getSensorName;
+import static com.fred.tandq.appState.getSensorType;
 import static com.fred.tandq.appState.getSensors;
 import static com.fred.tandq.appState.nodeID;
 
@@ -36,26 +39,47 @@ class MessageXML {
         liveSensors = getSensors();
     }
 
-    public void setVal(int sensor, String vName, String val) {
-        switch (sensor) {
+    public void setVal(HashMap<String, String> sMsg) {
+        for (String item: sMsg.keySet()){
+            Log.i(TAG, item + "," + sMsg.get(item));
+        }
+        switch (getSensorType(sMsg.get("Sensor"))) {
             case TYPE_ACCELEROMETER:
-                Accelerometer.put(vName, val);
-                break;
+                for (String item : sMsg.keySet()) {
+                    if (item != "Timestamp" && item != "Sensor") {
+                        Accelerometer.put(item, sMsg.get(item));
+                    }
+                }break;
             case TYPE_GRAVITY:
-                Gravity.put(vName, val);
-                break;
+                for (String item : sMsg.keySet()) {
+                    if (item != "Timestamp" && item != "Sensor") {
+                        Gravity.put(item, sMsg.get(item));
+                    }
+                }break;
             case TYPE_GYROSCOPE:
-                Gyroscope.put(vName, val);
-                break;
+                for (String item : sMsg.keySet()) {
+                    if (item != "Timestamp" && item != "Sensor") {
+                        Gyroscope.put(item, sMsg.get(item));
+                    }
+                }break;
             case TYPE_LINEAR_ACCELERATION:
-                LinearAcceleration.put(vName, val);
-                break;
+                for (String item : sMsg.keySet()) {
+                    if (item != "Timestamp" && item != "Sensor") {
+                        LinearAcceleration.put(item, sMsg.get(item));
+                    }
+                }break;
             case TYPE_ROTATION_VECTOR:
-                RotationVector.put(vName, val);
-                break;
+                for (String item : sMsg.keySet()) {
+                    if (item != "Timestamp" && item != "Sensor") {
+                        RotationVector.put(item, sMsg.get(item));
+                    }
+                }break;
             case TYPE_USB:
-                USB.put(vName, val);
-                break;
+                for (String item : sMsg.keySet()) {
+                    if (item != "Timestamp" && item != "Sensor") {
+                        USB.put(item, sMsg.get(item));
+                    }
+                }break;
         }
     }
     private String TimeStamp;                               //TODO: Outward ts should be clock time

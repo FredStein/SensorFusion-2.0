@@ -18,59 +18,43 @@ class XMLAggregator implements Runnable {
     //flag for logging
     private boolean mLogging = false;
 
-    private sQReader rQs;
-    private usbQReader usbRq;
+    private dataQReader rQs;
     private LinkedBlockingQueue udpQ = new LinkedBlockingQueue();
     private udpWriteQ udpWQ;
     private SortedMap<String, MessageXML> msgStack = new TreeMap<>();
     private udpSender udpS = new udpSender(udpQ);
 
-    XMLAggregator(HashMap<Integer,LinkedBlockingQueue> readQs) {
-        usbRq = new usbQReader(usbService.getDataQ());
-        rQs = new sQReader(readQs){
+    XMLAggregator(LinkedBlockingQueue sDataQ) {
+        udpWQ = new udpWriteQ(udpQ);
+        rQs = new dataQReader(sDataQ){
             @Override
             public void run(){
-                while (true) {                                      //Multiple queues
-                    for (int sensor : queues.keySet()) {
-                        try {
-                            HashMap<String,String> msg = (HashMap<String,String>) queues.get(sensor).take();
-                            String ts = new String(msg.get("Timestamp"));
-                            if (!msgStack.containsKey(ts)){
-                                MessageXML local = new MessageXML();
-                                for (String item : msg.keySet()){
-                                    if (item != "Timestamp") {
-                                        local.setVal(sensor, item, msg.get(item));
-                                    }
-                                    local.setTimeStamp(ts);
-                                }
-                                msgStack.put(ts, local);
-                            }else {
-                                for (String item : msg.keySet()){
-                                    if (item != "Timestamp") {
-                                        msgStack.get(ts).setVal(sensor, item, msg.get(item));
-                                    }
-                                }
-                            }
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                while (true) {
+                    try {
+                        HashMap<String, String> msg = (HashMap<String, String>) queue.take();
+                        for (String item: msg.keySet()){
+                            Log.i(TAG, item + "," + msg.get(item));
                         }
+                        String ts = new String(msg.get("Timestamp"));
+                        if (!msgStack.containsKey(ts)) {
+                            MessageXML local = new MessageXML();
+                            local.setTimeStamp(ts);
+                            local.setVal(msg);
+                            msgStack.put(ts, local);
+                        }else {
+                            msgStack.get(ts).setVal(msg);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-
-
-
                     for (String item: msgStack.keySet()){
-                        if (msgStack.get(item).isComplete()){
-                            try {
-                                udpWQ.queue.put(msgStack.remove(item));
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
+                        MessageXML msg = msgStack.get(item);
+                        if (msg.isComplete());
+                        publishXML(msg);
                     }
                 }
             }
         };
-        udpWQ = new udpWriteQ(udpQ);
     }
 
     @Override
@@ -80,35 +64,26 @@ class XMLAggregator implements Runnable {
         new Thread(udpWQ).start();
     }
 
-    public class sQReader implements Runnable {
-        public HashMap<Integer,LinkedBlockingQueue> queues;
-        public sQReader(HashMap<Integer,LinkedBlockingQueue> qMap) {
-            this.queues = qMap;
-        }
-
-        @Override
-        public void run() {                                     //Overiden will not execute
-            if (mLogging){
-                String logString = " sQReader Started";
-                Log.i(TAG, logString);
-            }
-
+    private void publishXML(MessageXML udpMsg){
+        try {
+            udpWQ.queue.put(udpMsg);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
-    public class usbQReader implements Runnable {
+    private class dataQReader implements Runnable {
         public LinkedBlockingQueue queue;
-        public usbQReader(LinkedBlockingQueue q) {
+        public dataQReader(LinkedBlockingQueue q) {
             this.queue = q;
         }
 
         @Override
         public void run() {                                     //Overiden will not execute
             if (mLogging){
-                String logString = " usbQReader Started";
+                String logString = " dataQReader Started";
                 Log.i(TAG, logString);
             }
-
         }
     }
 

@@ -41,7 +41,7 @@ class SensorThread implements Runnable {
 
     private int sensorType;
     private SensorActivity.sensorHandler sHandler;
-    private qWriter dataQW;
+    private dataQWriter dataQW;
     private int counts = 1;
     private float[] acc;
     private SensorManager sM;
@@ -49,14 +49,15 @@ class SensorThread implements Runnable {
     private SensorEventListener mListener;
     private long mEpoch;
 
-    SensorThread(LinkedBlockingQueue dQ, final int sensorType, Context mContext ) {
+    SensorThread(LinkedBlockingQueue sDataQ, final int sensorType, Context mContext ) {
         this.sensorType = sensorType;
+        Log.i(TAG, appState.getSensorName(sensorType)+", " + Integer.toString(sensorType));
         sHandler = getsHandler();
         this.sM = (SensorManager) mContext.getSystemService(SENSOR_SERVICE);
         this.sensor = sM.getDefaultSensor(sensorType);
         mEpoch = getEpoch();
 
-        dataQW = new qWriter(dQ);
+        dataQW = new dataQWriter(sDataQ);
         this.mListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
@@ -134,13 +135,14 @@ class SensorThread implements Runnable {
             udpPkt.put(varNames[i],Float.toString(sData[i]));
         }
         udpPkt.put("Timestamp", Long.toString(timestamp));
+        udpPkt.put("Sensor",appState.getSensorName(sensorType));
         return udpPkt;
     }
 
-    public class qWriter implements Runnable {
+    public class dataQWriter implements Runnable {
         private LinkedBlockingQueue queue;
 
-        public qWriter(LinkedBlockingQueue q) {
+        public dataQWriter(LinkedBlockingQueue q) {
             this.queue = q;
         }
 
@@ -151,7 +153,7 @@ class SensorThread implements Runnable {
         @Override
         public void run() {                                                             //TODO Need thread stop condition
             if (mLogging) {
-                String logString = " qWriter up";
+                String logString = " dataQWriter up";
                 Log.v(TAG, logString);
             }
         }

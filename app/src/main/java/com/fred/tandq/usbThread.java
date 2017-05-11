@@ -10,7 +10,9 @@ import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static android.os.SystemClock.elapsedRealtime;
+import static com.fred.tandq.appState.TYPE_USB;
 import static com.fred.tandq.appState.getEpoch;
+import static com.fred.tandq.appState.getSensorName;
 import static com.fred.tandq.appState.halfTick;
 import static com.fred.tandq.appState.sendUDP;
 import static com.fred.tandq.appState.tickLength;
@@ -128,6 +130,7 @@ class usbThread implements Runnable {
         HashMap<String,String> udpPkt = new HashMap<>();
         udpPkt.put("d",Float.toString(sData));
         udpPkt.put("Timestamp", Long.toString(timestamp));
+        udpPkt.put("Sensor",getSensorName(TYPE_USB));
         return udpPkt;
     }
 }
