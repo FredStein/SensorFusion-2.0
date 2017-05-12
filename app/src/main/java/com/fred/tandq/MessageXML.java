@@ -41,7 +41,7 @@ class MessageXML {
 
     public void setVal(HashMap<String, String> sMsg) {
         for (String item: sMsg.keySet()){
-            Log.i(TAG, item + "," + sMsg.get(item));
+            Log.d(TAG, item + "," + sMsg.get(item));
         }
         switch (getSensorType(sMsg.get("Sensor"))) {
             case TYPE_ACCELEROMETER:

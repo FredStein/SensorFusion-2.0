@@ -33,7 +33,7 @@ class XMLAggregator implements Runnable {
                     try {
                         HashMap<String, String> msg = (HashMap<String, String>) queue.take();
                         for (String item: msg.keySet()){
-                            Log.i(TAG, item + "," + msg.get(item));
+                            Log.d(TAG, item + "," + msg.get(item));
                         }
                         String ts = new String(msg.get("Timestamp"));
                         if (!msgStack.containsKey(ts)) {
@@ -82,7 +82,7 @@ class XMLAggregator implements Runnable {
         public void run() {                                     //Overiden will not execute
             if (mLogging){
                 String logString = " dataQReader Started";
-                Log.i(TAG, logString);
+                Log.d(TAG, logString);
             }
         }
     }
@@ -102,7 +102,7 @@ class XMLAggregator implements Runnable {
         public void run() {                             //TODO Thread stop condition
             if (mLogging) {
                 String logString = " udpWriteQ Started";
-                Log.i(TAG, logString);
+                Log.d(TAG, logString);
             }
         }
     }

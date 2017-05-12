@@ -77,7 +77,7 @@ class udpSender implements Runnable {
         try {
             socket.send(p);
             if (mLogging == true) {
-                Log.i(TAG, "XML Out : " + msgStr);
+                Log.d(TAG, "XML Out : " + msgStr);
             }
         }catch (java.io.IOException e) {
             e.printStackTrace();

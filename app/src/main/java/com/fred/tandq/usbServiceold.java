@@ -70,7 +70,7 @@ public class usbServiceold extends Service {
                 } else{
                     usbStr = usbStr + data;
                     String val = usbStr.split("m")[0].trim();
-                    Log.i(TAG, val);
+                    Log.d(TAG, val);
                     if (mHandler != null)
                         mHandler.obtainMessage(MESSAGE_FROM_SERIAL_PORT, val).sendToTarget();
                     usbStr = "";

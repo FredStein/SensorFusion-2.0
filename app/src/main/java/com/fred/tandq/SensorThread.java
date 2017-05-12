@@ -51,7 +51,7 @@ class SensorThread implements Runnable {
 
     SensorThread(LinkedBlockingQueue sDataQ, final int sensorType, Context mContext ) {
         this.sensorType = sensorType;
-        Log.i(TAG, appState.getSensorName(sensorType)+", " + Integer.toString(sensorType));
+        Log.d(TAG, appState.getSensorName(sensorType)+", " + Integer.toString(sensorType));
         sHandler = getsHandler();
         this.sM = (SensorManager) mContext.getSystemService(SENSOR_SERVICE);
         this.sensor = sM.getDefaultSensor(sensorType);
@@ -95,7 +95,7 @@ class SensorThread implements Runnable {
     public void run() {                                                                 //TODO Need thread stop condition
         if (mLogging) {
             String logString = getSensorName(sensorType)+" Thread Started";
-            Log.i(TAG, logString);
+            Log.d(TAG, logString);
         }
         new Thread(dataQW).start();                                                         //TODO: Need thread stop condition             refer to publishEpoch -> one of these is not needed!
         sM.registerListener(mListener, sensor, listenHint);                             // listenHint set in appState. default = 50ms

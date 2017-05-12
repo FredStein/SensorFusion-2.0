@@ -54,7 +54,7 @@ class usbThread implements Runnable {
             } else{
                 usbStr = usbStr + data;
                 String val = usbStr.split("m")[0].trim();
-                Log.i(TAG, val);
+                Log.d(TAG, val);
                 long ts = elapsedRealtime();
                 if (ts >= mEpoch){
                     if ( ts < mEpoch + tickLength) {
@@ -79,7 +79,7 @@ class usbThread implements Runnable {
     public void run() {
         if (mLogging) {
             String logString = "USB Thread Started";
-            Log.i(TAG, logString);
+            Log.d(TAG, logString);
         }
         new Thread(USBDataQW).start();
     }
