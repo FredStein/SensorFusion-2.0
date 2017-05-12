@@ -47,33 +47,32 @@ class usbThread implements Runnable {
     public static UsbSerialInterface.UsbReadCallback mCallback = new UsbSerialInterface.UsbReadCallback() {
         @Override
         public void onReceivedData(byte[] arg0) {
-            try {
-                String data = new String(arg0, "UTF-8");
-                if (!data.contains("%")){
-                    usbStr = usbStr + data;
-                } else{
-                    usbStr = usbStr + data;
-                    String val = usbStr.split("m")[0].trim();
-                    Log.i(TAG, val);
-                    long ts = elapsedRealtime();
-
-                    if (ts >= mEpoch){
-                        if ( ts < mEpoch + tickLength) {
-                            acc += Float.parseFloat(val);
-                            counts += 1;
-                        } else {
-                            long binTs = mEpoch + halfTick;
-                            publishEpoch(acc, counts, binTs);                           //Send total values, counts, timestamp (for middle of bin) to publisher
-                            acc = Float.parseFloat(val);
-                            counts = 1;
-                            mEpoch = mEpoch + tickLength;
-                        }
+        try {
+            String data = new String(arg0, "UTF-8");
+            if (!data.contains("%")){
+                usbStr = usbStr + data;
+            } else{
+                usbStr = usbStr + data;
+                String val = usbStr.split("m")[0].trim();
+                Log.i(TAG, val);
+                long ts = elapsedRealtime();
+                if (ts >= mEpoch){
+                    if ( ts < mEpoch + tickLength) {
+                        acc += Float.parseFloat(val);
+                        counts += 1;
+                    } else {
+                        long binTs = mEpoch + halfTick;                             //TODO: Check - multiple threads resetting epoch No No No
+                        publishEpoch(acc, counts, binTs);                           //Send total values, counts, timestamp (for middle of bin) to publisher
+                        acc = Float.parseFloat(val);
+                        counts = 1;
+                        mEpoch = mEpoch + tickLength;
                     }
-                    usbStr = "";
                 }
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                usbStr = "";
             }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         }
     };
     @Override

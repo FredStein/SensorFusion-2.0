@@ -30,7 +30,6 @@ public class SensorService extends Service {
         int i = 0;
         for (Integer item : sensors){
             if (item != TYPE_USB) {                                                         //TODO: May be possible to start USB thread here but will need to check connectivity first
-                sDataQ = new LinkedBlockingQueue();
                 sensorThreads[i] = new SensorThread(sDataQ, item, this);
                 i += 1;
             }
