@@ -22,7 +22,7 @@ import static com.fred.tandq.appState.nodeID;
 
 class MessageXML {
     //tag for logging
-    private static final String TAG = MessageXML.class.getSimpleName();
+    private static final String TAG = MessageXML.class.getSimpleName()+"SF 2.0";
     //flag for logging
     private boolean mLogging = false ;
 
@@ -41,7 +41,9 @@ class MessageXML {
 
     public void setVal(HashMap<String, String> sMsg) {
         for (String item: sMsg.keySet()){
-            Log.d(TAG, item + "," + sMsg.get(item));
+            if (mLogging) {
+                Log.d(TAG, item + "," + sMsg.get(item));
+            }
         }
         switch (getSensorType(sMsg.get("Sensor"))) {
             case TYPE_ACCELEROMETER:

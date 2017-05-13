@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static android.os.SystemClock.elapsedRealtime;
+import static com.fred.tandq.SensorService.getsDataQ;
 import static com.fred.tandq.appState.TYPE_USB;
 import static com.fred.tandq.appState.getEpoch;
 import static com.fred.tandq.appState.getSensorName;
@@ -24,9 +25,9 @@ import static com.fred.tandq.usbService.MESSAGE_FROM_SERIAL_PORT;
 
 class usbThread implements Runnable {
     //tag for logging
-    private static final String TAG = usbService.class.getSimpleName();
+    private static final String TAG = usbThread.class.getSimpleName()+"SF 2.0";
     //flag for logging
-    private boolean mLogging = false ;
+    private static boolean mLogging = true ;
 
     private static Handler mHandler = SensorActivity.getuHandler();
     private static qWriter USBDataQW;
@@ -34,10 +35,12 @@ class usbThread implements Runnable {
     private static float acc;
     private static long mEpoch;
     private static String usbStr = "";
+    private LinkedBlockingQueue sDataQ;
 
-    usbThread(LinkedBlockingQueue usbDataQ){
+    usbThread(){
         mEpoch = getEpoch();
-        USBDataQW = new qWriter(usbDataQ);
+        sDataQ = getsDataQ();
+        USBDataQW = new qWriter(sDataQ);
     }
     /*
      *  Data received from serial port will be received here. Just populate onReceivedData with your code
@@ -54,7 +57,9 @@ class usbThread implements Runnable {
             } else{
                 usbStr = usbStr + data;
                 String val = usbStr.split("m")[0].trim();
-                Log.d(TAG, val);
+                if(mLogging) {
+                    Log.d(TAG, val);
+                }
                 long ts = elapsedRealtime();
                 if (ts >= mEpoch){
                     if ( ts < mEpoch + tickLength) {

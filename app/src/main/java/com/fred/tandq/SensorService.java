@@ -2,7 +2,6 @@ package com.fred.tandq;
 
 import android.app.Service;
 import android.content.Intent;
-
 import android.os.IBinder;
 
 import java.util.Set;
@@ -13,12 +12,15 @@ import static com.fred.tandq.appState.TYPE_USB;
 
 public class SensorService extends Service {
     //tag for logging
-    private static final String TAG = SensorService.class.getSimpleName();
+    private static final String TAG = SensorService.class.getSimpleName()+"SF 2.0";
     //flag for logging
-    private static boolean mLogging = false;
+    private static boolean mLogging = true;
 
     private Set<Integer> sensors;
     private static LinkedBlockingQueue sDataQ;
+    public static LinkedBlockingQueue getsDataQ() {
+        return sDataQ;
+    }
     private static SensorThread[] sensorThreads;
     private static XMLAggregator XMLC;
 
@@ -30,11 +32,11 @@ public class SensorService extends Service {
         int i = 0;
         for (Integer item : sensors){
             if (item != TYPE_USB) {                                                         //TODO: May be possible to start USB thread here but will need to check connectivity first
-                sensorThreads[i] = new SensorThread(sDataQ, item, this);
+                sensorThreads[i] = new SensorThread(item, this);
                 i += 1;
             }
         }
-        XMLC = new XMLAggregator(sDataQ);
+        XMLC = new XMLAggregator();
     }
 
     @Override

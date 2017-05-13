@@ -24,9 +24,9 @@ import static android.os.SystemClock.elapsedRealtime;
 
 class appState {
     //tag for logging
-    private static final String TAG = appState.class.getSimpleName();
+    private static final String TAG = appState.class.getSimpleName()+"SF 2.0";
     //flag for logging
-    private static boolean mLogging = false;
+    private static boolean mLogging = true;
 
     public static final int TYPE_USB = 20000;
 
@@ -74,7 +74,6 @@ class appState {
         listenHint = Integer.parseInt(sharedPref.getString("sampleFrequency",mContext.getString(R.string.defaultSample_Freq)));
         listenHint = listenHint * 1000;         //Convert to microseconds (See above)
 
-        int gotAll = 0;
         SensorManager mSensorManager = (SensorManager) mContext.getSystemService(SENSOR_SERVICE);
 
         Resources AppRes = mContext.getResources();
@@ -99,6 +98,7 @@ class appState {
         present = (TextView) view.findViewById(R.id.sp);
         absent = (TextView) view.findViewById(R.id.sa);
 
+        int gotAll = 0;
         for (int item : resTypes) {
             if (mSensorManager.getDefaultSensor(item) == null) {
                 // We do not have this sensor

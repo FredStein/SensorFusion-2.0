@@ -3,10 +3,12 @@ package com.fred.tandq;
 
 import android.util.Log;
 
+import java.util.HashMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.HashMap;
+
+import static com.fred.tandq.SensorService.getsDataQ;
 
 /**
  * Created by Fred Stein on 25/04/2017.
@@ -14,7 +16,7 @@ import java.util.HashMap;
 
 class XMLAggregator implements Runnable {
     //tag for logging
-    private static final String TAG = XMLAggregator.class.getSimpleName();
+    private static final String TAG = XMLAggregator.class.getSimpleName()+"SF 2.0";
     //flag for logging
     private boolean mLogging = false;
 
@@ -23,9 +25,11 @@ class XMLAggregator implements Runnable {
     private udpWriteQ udpWQ;
     private SortedMap<String, MessageXML> msgStack = new TreeMap<>();
     private udpSender udpS = new udpSender(udpQ);
+    private LinkedBlockingQueue sDataQ;
 
-    XMLAggregator(LinkedBlockingQueue sDataQ) {
+    XMLAggregator() {
         udpWQ = new udpWriteQ(udpQ);
+        sDataQ = getsDataQ();
         rQs = new dataQReader(sDataQ){
             @Override
             public void run(){

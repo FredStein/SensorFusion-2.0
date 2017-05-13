@@ -15,27 +15,26 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-
 import android.util.Log;
 
 import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static android.content.Context.SENSOR_SERVICE;
-
 import static com.fred.tandq.SensorActivity.getsHandler;
+import static com.fred.tandq.SensorService.getsDataQ;
 import static com.fred.tandq.appState.getEpoch;
 import static com.fred.tandq.appState.getSensorName;
-import static com.fred.tandq.appState.listenHint;
-import static com.fred.tandq.appState.tickLength;
 import static com.fred.tandq.appState.halfTick;
+import static com.fred.tandq.appState.listenHint;
 import static com.fred.tandq.appState.sendUDP;
+import static com.fred.tandq.appState.tickLength;
 import static com.fred.tandq.appState.varNames;
 
 
 class SensorThread implements Runnable {
     //tag for logging
-    private static final String TAG = SensorThread.class.getSimpleName();
+    private static final String TAG = SensorThread.class.getSimpleName()+"SF 2.0";
     //flag for logging
     private static final boolean mLogging = false;
 
@@ -48,13 +47,15 @@ class SensorThread implements Runnable {
     private long mEpoch;
     private int counts = 1;
     private float[] acc;
+    private LinkedBlockingQueue sDataQ;
 
-    SensorThread(LinkedBlockingQueue sDataQ, final int sensorType, Context mContext ) {
+    SensorThread( final int sensorType, Context mContext ) {
         this.sensorType = sensorType;
         Log.d(TAG, appState.getSensorName(sensorType)+", " + Integer.toString(sensorType));
         sHandler = getsHandler();
         this.sM = (SensorManager) mContext.getSystemService(SENSOR_SERVICE);
         this.sensor = sM.getDefaultSensor(sensorType);
+        sDataQ = getsDataQ();
         mEpoch = getEpoch();
 
         dataQW = new dataQWriter(sDataQ);

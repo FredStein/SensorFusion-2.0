@@ -21,22 +21,22 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Set;
 
+import static com.fred.tandq.appState.displayOn;
 import static com.fred.tandq.appState.getTextViewCodes;
 import static com.fred.tandq.appState.initDisplay;
-import static com.fred.tandq.appState.displayOn;
 import static com.fred.tandq.appState.sendUDP;
 
 public class SensorActivity extends AppCompatActivity {
     //tag for logging
-    private static final String TAG = SensorActivity.class.getSimpleName();
+    private static final String TAG = SensorActivity.class.getSimpleName()+"SF 2.0";
     //flag for logging
-    private static boolean mLogging = false;
+    private static boolean mLogging = true;
 
     private ToggleButton displayData;
     private ToggleButton udpSend;
     private static TextView tDisp;
     private static TextView usbDisp;
-    public static sensorHandler sHandler;
+    private static sensorHandler sHandler;
     public static sensorHandler getsHandler() {
         return sHandler;
     }
@@ -72,6 +72,10 @@ public class SensorActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (mLogging){
+            String logstring = "Sensor Activity Created";
+            Log.d(TAG, logstring);
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sensor);
 
@@ -94,12 +98,20 @@ public class SensorActivity extends AppCompatActivity {
 
     @Override
     public void onStart() {
+        if (mLogging){
+            String logstring = "Sensor Activity Started";
+            Log.d(TAG, logstring);
+        }
         super.onStart();
         startService(new Intent(this, SensorService.class));
     }
 
     @Override
     protected void onResume() {
+        if (mLogging){
+            String logstring = "Sensor Activity onResume";
+            Log.d(TAG, logstring);
+        }
         super.onResume();                               //Included for completness. Reciever runs in background
         appState.setFilters(mUsbReceiver,this);  // Start listening notifications from UsbService
         startService(usbService.class, usbConnection, null); // Start UsbService(if it was not started before) and Bind it
@@ -108,7 +120,10 @@ public class SensorActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        super.onPause();                                //Included for completness. Reciever runs in background
+        if (mLogging){
+            String logstring = "Sensor Activity onPause";
+            Log.d(TAG, logstring);
+        }        super.onPause();                                //Included for completness. Reciever runs in background
         unregisterReceiver(mUsbReceiver);
         unbindService(usbConnection);
     }

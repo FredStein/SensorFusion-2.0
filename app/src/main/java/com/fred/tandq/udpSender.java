@@ -10,6 +10,7 @@ import java.net.UnknownHostException;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingQueue;
+
 import static com.fred.tandq.appState.hubIP;
 import static com.fred.tandq.appState.hubPort;
 
@@ -19,9 +20,9 @@ import static com.fred.tandq.appState.hubPort;
 
 class udpSender implements Runnable {
     //tag for logging
-    private static final String TAG = udpSender.class.getSimpleName();
+    private static final String TAG = udpSender.class.getSimpleName()+"SF 2.0";
     //flag for logging
-    private boolean mLogging = true;
+    private boolean mLogging = false;
 
     private udpReader udpR;
     private SortedMap<String, MessageXML> udpStack = new TreeMap<>();
@@ -76,7 +77,7 @@ class udpSender implements Runnable {
         DatagramPacket p = new DatagramPacket(message, msg_length, IPout, hubPort);
         try {
             socket.send(p);
-            if (mLogging == true) {
+            if (mLogging) {
                 Log.d(TAG, "XML Out : " + msgStr);
             }
         }catch (java.io.IOException e) {

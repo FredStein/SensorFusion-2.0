@@ -11,6 +11,7 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.felhr.usbserial.CDCSerialDevice;
 import com.felhr.usbserial.UsbSerialDevice;
@@ -18,14 +19,12 @@ import com.felhr.usbserial.UsbSerialInterface;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class usbService extends Service {
     //tag for logging
-    private static final String TAG = usbService.class.getSimpleName();
+    private static final String TAG = usbService.class.getSimpleName()+"SF 2.0";
     //flag for logging
-    private boolean mLogging = false ;
-
+    private boolean mLogging = true;
 
     public static final String ACTION_USB_READY = "com.felhr.connectivityservices.USB_READY";
     public static final String ACTION_USB_ATTACHED = "android.hardware.usb.action.USB_DEVICE_ATTACHED";
@@ -50,10 +49,6 @@ public class usbService extends Service {
     private UsbDevice device;
     private UsbDeviceConnection connection;
     private UsbSerialDevice serialPort;
-    private static LinkedBlockingQueue usbDataQ;
-    public static LinkedBlockingQueue getDataQ(){
-        return usbDataQ;
-    }
     public static usbThread USBThread;
 
     /*
@@ -96,14 +91,17 @@ public class usbService extends Service {
      */
     @Override
     public void onCreate() {
+        if (mLogging){
+            String logstring = "usbService Created";
+            Log.d(TAG, logstring);
+        }
         this.context = this;
         serialPortConnected = false;
         usbService.SERVICE_CONNECTED = true;
         setFilter();
         usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         findSerialPortDevice();
-        usbDataQ = new LinkedBlockingQueue();
-        USBThread = new usbThread(usbDataQ);
+        USBThread = new usbThread();
     }
 
     /* MUST READ about services
@@ -112,12 +110,20 @@ public class usbService extends Service {
      */
     @Override
     public IBinder onBind(Intent intent) {
+        if (mLogging){
+            String logstring = "usbService Bound";
+            Log.d(TAG, logstring);
+        }
         new Thread(USBThread).start();
         return binder;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (mLogging){
+            String logstring = "usbService Started";
+            Log.d(TAG, logstring);
+        }
         new Thread(USBThread).start();
         return Service.START_NOT_STICKY;
     }

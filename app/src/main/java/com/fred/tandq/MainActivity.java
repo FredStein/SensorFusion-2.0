@@ -4,15 +4,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     //tag for logging
-    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String TAG = MainActivity.class.getSimpleName()+"SF 2.0";
     //flag for logging
-    private boolean mLogging = false;
+    private boolean mLogging = true;
 
     private appState state;
 
@@ -20,6 +21,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (mLogging){
+            String logstring = "Main Activity Created";
+            Log.d(TAG, logstring);
+        }
         getSupportActionBar().setDisplayUseLogoEnabled(true);
 
         getFragmentManager().beginTransaction()
