@@ -1,6 +1,5 @@
 package com.fred.tandq;
 
-import android.os.Handler;
 import android.util.Log;
 
 import com.felhr.usbserial.UsbSerialInterface;
@@ -10,14 +9,12 @@ import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static android.os.SystemClock.elapsedRealtime;
+import static com.fred.tandq.SensorActivity.getsHandler;
 import static com.fred.tandq.SensorService.getsDataQ;
-import static com.fred.tandq.appState.TYPE_USB;
 import static com.fred.tandq.appState.getEpoch;
-import static com.fred.tandq.appState.getSensorName;
 import static com.fred.tandq.appState.halfTick;
 import static com.fred.tandq.appState.sendUDP;
 import static com.fred.tandq.appState.tickLength;
-import static com.fred.tandq.usbService.MESSAGE_FROM_SERIAL_PORT;
 
 /**
  * Created by Fred Stein on 10/05/2017.
@@ -29,18 +26,20 @@ class usbThread implements Runnable {
     //flag for logging
     private static boolean mLogging = true ;
 
-    private static Handler mHandler = SensorActivity.getuHandler();
+    private static SensorActivity.sensorHandler sHandler = getsHandler();
     private static qWriter USBDataQW;
     private static int counts = 1;
     private static float acc;
     private static long mEpoch;
     private static String usbStr = "";
     private LinkedBlockingQueue sDataQ;
+    private static mySensor USBSensor;
 
-    usbThread(){
+    usbThread(mySensor sensor){
         mEpoch = getEpoch();
         sDataQ = getsDataQ();
         USBDataQW = new qWriter(sDataQ);
+        USBSensor = sensor;
     }
     /*
      *  Data received from serial port will be received here. Just populate onReceivedData with your code
@@ -111,8 +110,8 @@ class usbThread implements Runnable {
 
     private static void publishEpoch(float sData, int counts, final long ts) {
         float avData = sData / counts;
-        if (mHandler != null)
-            mHandler.obtainMessage(MESSAGE_FROM_SERIAL_PORT,displayFormat(avData, ts)).sendToTarget();
+        if (sHandler != null)
+            sHandler.obtainMessage(USBSensor.getType(),displayFormat(avData, ts)).sendToTarget();
         if (sendUDP){
             try {
                 USBDataQW.queue.put(udpFormat(avData,ts));
@@ -122,19 +121,19 @@ class usbThread implements Runnable {
         }
     }
 
-    private static String[] displayFormat(float sData, long timestamp){
-        String[] dispPkt = new String[2];
-        dispPkt[0] = String.format ("%.3f", sData);
+    private static HashMap<String,String> displayFormat(float sData, long timestamp){
+        HashMap<String,String> dPkt = new HashMap<>();
+        dPkt.put("d",String.format ("%.3f", sData));                                //TODO: generalise with use of mySensor class
         String time = String.format ("%d", timestamp);
-        dispPkt[1] = time.substring(time.length() - 5, time.length());        //right most 5 ms of timestamp
-        return dispPkt;
+        dPkt.put("Timestamp", time.substring(time.length() - 5, time.length()));    //right most 5 ms of timestamp
+        return dPkt;
     }
 
     private static HashMap<String, String> udpFormat(float sData, long timestamp){
         HashMap<String,String> udpPkt = new HashMap<>();
         udpPkt.put("d",Float.toString(sData));
         udpPkt.put("Timestamp", Long.toString(timestamp));
-        udpPkt.put("Sensor",getSensorName(TYPE_USB));
+        udpPkt.put("Sensor",USBSensor.getName());
         return udpPkt;
     }
 }

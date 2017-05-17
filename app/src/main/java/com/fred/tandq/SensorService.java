@@ -4,10 +4,10 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import java.util.Set;
+import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static com.fred.tandq.appState.TYPE_USB;
+import static com.fred.tandq.appState.getUSB;
 
 
 public class SensorService extends Service {
@@ -16,13 +16,14 @@ public class SensorService extends Service {
     //flag for logging
     private static boolean mLogging = true;
 
-    private Set<Integer> sensors;
+    private HashMap<Integer, mySensor> sensors;
     private static LinkedBlockingQueue sDataQ;
     public static LinkedBlockingQueue getsDataQ() {
         return sDataQ;
     }
     private static SensorThread[] sensorThreads;
     private static XMLAggregator XMLC;
+    private static usbThread USBThread;
 
     @Override
     public void onCreate() {
@@ -30,11 +31,14 @@ public class SensorService extends Service {
         sDataQ = new LinkedBlockingQueue();
         sensorThreads = new SensorThread[sensors.size()];
         int i = 0;
-        for (Integer item : sensors){
-            if (item != TYPE_USB) {                                                         //TODO: May be possible to start USB thread here but will need to check connectivity first
+        for (mySensor item : sensors.values()){
+            if (!item.getName().equals("USB")) {
                 sensorThreads[i] = new SensorThread(item, this);
                 i += 1;
             }
+        }
+        if(getUSB()){
+            USBThread = new usbThread(sensors.get(70000));
         }
         XMLC = new XMLAggregator();
     }
@@ -44,8 +48,11 @@ public class SensorService extends Service {
         for (SensorThread item : sensorThreads) {
             new Thread(item).start();
         }
+        if (getUSB()){
+            new Thread(USBThread).start();
+        }
         new Thread(XMLC).start();
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     @Override

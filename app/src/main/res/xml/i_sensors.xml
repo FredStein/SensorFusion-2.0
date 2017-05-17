@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sensors>
+    <sensor
+        name = "Accelerometer"
+        type = "1"
+        abbr = "A">
+        <dimensions
+            x = "x"
+            y = "y"
+            z = "z">
+        </dimensions>
+    </sensor>
+    <sensor
+        name = "Gravity"
+        type = "9"
+        abbr = "G">
+        <dimensions
+            x = "x"
+            y = "y"
+            z = "z">
+        </dimensions>
+    </sensor>
+    <sensor
+        name = "Gyroscope"
+        type = "4"
+        abbr = "Gyro">
+        <dimensions
+            x = "x"
+            y = "y"
+            z = "z">
+        </dimensions>
+    </sensor>
+    <sensor
+        name = "Linear Acceleration"
+        type = "10"
+        abbr = "LA">
+        <dimensions
+            x = "x"
+            y = "y"
+            z = "z">
+        </dimensions>
+    </sensor>
+    <sensor
+        name = "Rotation Vector"
+        type = "11"
+        abbr = "R">
+        <dimensions
+            x = "x"
+            y = "y"
+            z = "z"
+            w = "w"
+            r = "r">
+        </dimensions>
+    </sensor>
+</sensors>

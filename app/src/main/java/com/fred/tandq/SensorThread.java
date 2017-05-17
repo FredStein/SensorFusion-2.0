@@ -24,12 +24,10 @@ import static android.content.Context.SENSOR_SERVICE;
 import static com.fred.tandq.SensorActivity.getsHandler;
 import static com.fred.tandq.SensorService.getsDataQ;
 import static com.fred.tandq.appState.getEpoch;
-import static com.fred.tandq.appState.getSensorName;
 import static com.fred.tandq.appState.halfTick;
 import static com.fred.tandq.appState.listenHint;
 import static com.fred.tandq.appState.sendUDP;
 import static com.fred.tandq.appState.tickLength;
-import static com.fred.tandq.appState.varNames;
 
 
 class SensorThread implements Runnable {
@@ -39,7 +37,8 @@ class SensorThread implements Runnable {
     private static final boolean mLogging = false;
 
     private int sensorType;
-    private SensorActivity.sensorHandler sHandler;
+    private mySensor fSensor;
+    private SensorActivity.sensorHandler sHandler = getsHandler();
     private dataQWriter dataQW;
     private SensorManager sM;
     private Sensor sensor;
@@ -49,10 +48,10 @@ class SensorThread implements Runnable {
     private float[] acc;
     private LinkedBlockingQueue sDataQ;
 
-    SensorThread( final int sensorType, Context mContext ) {
-        this.sensorType = sensorType;
-        Log.d(TAG, appState.getSensorName(sensorType)+", " + Integer.toString(sensorType));
-        sHandler = getsHandler();
+    SensorThread(mySensor sensor, Context mContext ) {
+        this.sensorType = sensor.getType();
+        this.fSensor = sensor;
+        Log.d(TAG, fSensor.getName()+", " + Integer.toString(sensorType));
         this.sM = (SensorManager) mContext.getSystemService(SENSOR_SERVICE);
         this.sensor = sM.getDefaultSensor(sensorType);
         sDataQ = getsDataQ();
@@ -95,7 +94,7 @@ class SensorThread implements Runnable {
     @Override
     public void run() {                                                                 //TODO Need thread stop condition
         if (mLogging) {
-            String logString = getSensorName(sensorType)+" Thread Started";
+            String logString = fSensor.getName()+" Thread Started";
             Log.d(TAG, logString);
         }
         new Thread(dataQW).start();                                                         //TODO: Need thread stop condition             refer to publishEpoch -> one of these is not needed!
@@ -118,25 +117,27 @@ class SensorThread implements Runnable {
         }
     }
 
-    private String[] displayFormat(float sData[], long timestamp){
+    private HashMap<String,String> displayFormat(float sData[], long timestamp){
         int nValues = sData.length;
-        String[] dispPkt = new String[nValues+1];
+        HashMap<String,String> dispPkt = new HashMap<>();
+        fSensor.getDim();
         for (int i = 0; i < nValues; i++){
-            dispPkt[i] = String.format ("%.3f", sData[i]);
+            dispPkt.put(fSensor.getDim()[i],String.format ("%.3f", sData[i]));
         }
         String time = String.format ("%d", timestamp);
-        dispPkt[nValues] = time.substring(time.length() - 5, time.length());        //right most 5 ms of timestamp
+        dispPkt.put("Timestamp",time.substring(time.length() - 5, time.length()));        //right most 5 ms of timestamp
         return dispPkt;
     }
 
     private HashMap<String, String> udpFormat(float sData[], long timestamp){
         int nValues = sData.length;
         HashMap<String,String> udpPkt = new HashMap<>();
+        fSensor.getDim();
         for (int i = 0; i < nValues; i++){
-            udpPkt.put(varNames[i],Float.toString(sData[i]));
+            udpPkt.put(fSensor.getDim()[i],String.format ("%.3f", sData[i]));
         }
         udpPkt.put("Timestamp", Long.toString(timestamp));
-        udpPkt.put("Sensor",appState.getSensorName(sensorType));
+        udpPkt.put("Sensor",fSensor.getName());
         return udpPkt;
     }
 

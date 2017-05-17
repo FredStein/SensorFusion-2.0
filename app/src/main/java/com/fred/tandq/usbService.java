@@ -101,7 +101,6 @@ public class usbService extends Service {
         setFilter();
         usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         findSerialPortDevice();
-        USBThread = new usbThread();
     }
 
     /* MUST READ about services

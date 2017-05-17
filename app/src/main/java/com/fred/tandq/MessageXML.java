@@ -3,15 +3,12 @@ package com.fred.tandq;
 import android.util.Log;
 
 import java.util.HashMap;
-import java.util.Set;
 
 import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.Sensor.TYPE_GRAVITY;
 import static android.hardware.Sensor.TYPE_GYROSCOPE;
 import static android.hardware.Sensor.TYPE_LINEAR_ACCELERATION;
 import static android.hardware.Sensor.TYPE_ROTATION_VECTOR;
-import static com.fred.tandq.appState.TYPE_USB;
-import static com.fred.tandq.appState.getSensorName;
 import static com.fred.tandq.appState.getSensorType;
 import static com.fred.tandq.appState.getSensors;
 import static com.fred.tandq.appState.nodeID;
@@ -26,7 +23,8 @@ class MessageXML {
     //flag for logging
     private boolean mLogging = false ;
 
-    private static Set<Integer> liveSensors;
+    private static final int TYPE_USB = 70000;                                                //TODO: Populate from e_sensors.xml
+    private static HashMap<Integer,mySensor> liveSensors;
     private static HashMap<String, String> Accelerometer = new HashMap<>();
     private static HashMap<String, String> Gravity = new HashMap<>();
     private static HashMap<String, String> Gyroscope = new HashMap<>();
@@ -35,7 +33,6 @@ class MessageXML {
     private static HashMap<String, String> USB = new HashMap<>();
 
     MessageXML() {
-
         liveSensors = getSensors();
     }
 
@@ -98,7 +95,7 @@ class MessageXML {
 
     public boolean isComplete() {
         Boolean complete = true;
-        for (int item : liveSensors) {
+        for (int item : liveSensors.keySet()) {
             switch (item) {
                 case TYPE_ACCELEROMETER:
                     status.put(item, !Accelerometer.keySet().isEmpty());
@@ -130,45 +127,45 @@ class MessageXML {
         HashMap<Integer,String> element = new HashMap<>();
         String xml = "<\u003Fxml version=\"1.0\" encoding=\"utf-8\"\u003F>";
         xml = xml + "<Node Name=\"" + nodeID +"\">";
-        for (int item : liveSensors) {
+        for (int item : liveSensors.keySet()) {
             switch (item) {
                 case TYPE_ACCELEROMETER:
-                    String aStr = "<Sensor Type=\""+ getSensorName(item)+ "\"";
+                    String aStr = "<Sensor Type=\""+ liveSensors.get(item).getName() + "\"";
                     for (String sVar : Accelerometer.keySet()){
-                        aStr = aStr + " " + sVar + "=\"" + Accelerometer.get(sVar)+"\"";
+                        aStr = aStr + " " + sVar + "=\"" + Accelerometer.get(sVar) +"\"";
                     }
                     element.put(item, aStr + "/>");
                     break;
                 case TYPE_GRAVITY:
-                    String bStr = "<Sensor Type=\""+ getSensorName(item)+ "\"";
+                    String bStr = "<Sensor Type=\""+ liveSensors.get(item).getName() + "\"";
                     for (String sVar : Gravity.keySet()){
                         bStr = bStr + " " +sVar + "=\"" + Gravity.get(sVar)+"\"";
                     }
                     element.put(item, bStr + "/>");
                     break;
                 case TYPE_GYROSCOPE:
-                    String cStr = "<Sensor Type=\""+ getSensorName(item)+ "\"";
+                    String cStr = "<Sensor Type=\""+ liveSensors.get(item).getName() + "\"";
                     for (String sVar : Gyroscope.keySet()){
                         cStr = cStr + " " + sVar + "=\"" + Gyroscope.get(sVar)+"\"";
                     }
                     element.put(item, cStr + "/>");
                     break;
                 case TYPE_LINEAR_ACCELERATION:
-                    String dStr = "<Sensor Type=\""+ getSensorName(item)+ "\"";
+                    String dStr = "<Sensor Type=\""+ liveSensors.get(item).getName() + "\"";
                     for (String sVar : LinearAcceleration.keySet()){
                         dStr = dStr + " " + sVar + "=\"" + LinearAcceleration.get(sVar)+"\"";
                     }
                     element.put(item, dStr + "/>");
                     break;
                 case TYPE_ROTATION_VECTOR:
-                    String eStr = "<Sensor Type=\""+ getSensorName(item)+ "\"";
+                    String eStr = "<Sensor Type=\""+ liveSensors.get(item).getName() + "\"";
                     for (String sVar : RotationVector.keySet()){
                         eStr = eStr + " " + sVar + "=\"" + RotationVector.get(sVar)+"\"";
                     }
                     element.put(item, eStr + "/>");
                     break;
                 case TYPE_USB:
-                    String fStr = "<Sensor Type=\""+ getSensorName(item)+ "\"";
+                    String fStr = "<Sensor Type=\""+ liveSensors.get(item).getName() + "\"";
                     for (String sVar : USB.keySet()){
                         fStr = fStr + " " + sVar + "=\"" + USB.get(sVar)+"\"";
                     }

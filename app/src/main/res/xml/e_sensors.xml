@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sensors>
+    <sensor
+        name = "USB"
+        type = "70000"
+        abbr = "USB">
+        <dimensions
+            d = "d">
+        </dimensions>
+    </sensor>
+</sensors>
+
+<!--
+External Sensor(s)
+Short name(s) for the variable(s) delivered
+USE TYPE values outside range of Android specified sensors
+
+-->

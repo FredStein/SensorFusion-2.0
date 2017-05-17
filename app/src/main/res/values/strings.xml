@@ -5,7 +5,7 @@
     <string name="sensors_absent">Sensors Absent</string>
     <string name="noSensors">None of the requested sensors present\nCannot proceede</string>
     <string name="present">"Requested sensors present"</string>
-    <string name="absent">"Some sensors not available\nReduced function"</string>
+    <string name="absent">"Some sensors not available\nFull functionality not available"</string>
     <string name="Accel_group">Accelerometer</string>
     <string name="Gyro_group">Gyroscope</string>
     <string name="LA">Linear\nAcceleration</string>
