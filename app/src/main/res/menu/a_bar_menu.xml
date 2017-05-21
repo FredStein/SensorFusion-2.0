@@ -5,7 +5,7 @@
     <item
         android:id="@+id/settings"
         app:showAsAction="always"
-        android:title="NO USB">
+        android:title="@string/No_USB">
     </item>
 
 </menu>

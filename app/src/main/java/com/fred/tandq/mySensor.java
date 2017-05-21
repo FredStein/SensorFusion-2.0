@@ -21,20 +21,19 @@ class mySensor {
     public String getAbbr() {
         return abbr;
     }
-    private String[] dim;
+    private String[] mDim;
     public void setDim(String[] dim){
-        this.dim = new String[dim.length];
-        this.dim = dim;
+        mDim = new String[dim.length];
+        mDim = dim;
         setKeys(dim);
     }
     public String[] getDim() {
-        return dim;
+        return mDim;
     }
     private HashMap<String, String> displayFieldIdx = new HashMap<>();
     public HashMap<String, String> getFieldIdx(){
-        return this.displayFieldIdx;
+        return displayFieldIdx;
     }
-    private HashMap<String, TextView> displayFields = new HashMap<>();
 
     mySensor(String name, int type, String abbr){
         this.name = name;
@@ -43,14 +42,15 @@ class mySensor {
     }
     private void setKeys(String[] dim){
         for (String item : dim){
-            this.displayFieldIdx.put(abbr+item,item);
-            this.displayFields.put(item,null);
+            displayFieldIdx.put(abbr+item,item);
+            displayFields.put(item,null);
         }
     }
+    private HashMap<String, TextView> displayFields = new HashMap<>();
     public void setTextField(String tvID, TextView tv){
-        this.displayFields.put(displayFieldIdx.get(tvID),tv);
+        displayFields.put(displayFieldIdx.get(tvID),tv);
     }
     public TextView getTextView(String dim){
-        return this.displayFields.get(dim);
+        return displayFields.get(dim);
     }
 }

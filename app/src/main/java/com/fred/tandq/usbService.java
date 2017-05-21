@@ -17,12 +17,13 @@ import com.felhr.usbserial.CDCSerialDevice;
 import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class usbService extends Service {
     //tag for logging
-    private static final String TAG = usbService.class.getSimpleName()+"SF 2.0";
+    private static final String TAG = usbService.class.getSimpleName()+"SF2Debug";
     //flag for logging
     private boolean mLogging = true;
 
@@ -39,7 +40,7 @@ public class usbService extends Service {
     public static final int MESSAGE_FROM_SERIAL_PORT = 0;
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
     private static final int BAUD_RATE = 115200; // BaudRate. Change this value if you need
-    public static boolean SERVICE_CONNECTED = false;
+    public static boolean SERVICE_CONNECTED;
 
     private IBinder binder = new UsbBinder();
     private boolean serialPortConnected;
@@ -49,7 +50,7 @@ public class usbService extends Service {
     private UsbDevice device;
     private UsbDeviceConnection connection;
     private UsbSerialDevice serialPort;
-    public static usbThread USBThread;
+    private appState state;
 
     /*
      * Different notifications from OS will be received here (USB attached, detached, permission responses...)
@@ -67,7 +68,10 @@ public class usbService extends Service {
                     connection = usbManager.openDevice(device);
                     serialPortConnected = true;
                     new ConnectionThread().run();
-                } else // User not accepted our USB connection. Send an Intent to the Main Activity
+                    if (!state.getUSB()) {
+                        state.setUSB(true);
+                    }
+                } else // User not accepted our USB connection. Send an Intent to the Activities
                 {
                     Intent intent = new Intent(ACTION_USB_PERMISSION_NOT_GRANTED);
                     arg0.sendBroadcast(intent);
@@ -76,14 +80,29 @@ public class usbService extends Service {
                 if (!serialPortConnected)
                     findSerialPortDevice(); // A USB device has been attached. Try to open it as a Serial port
             } else if (arg1.getAction().equals(ACTION_USB_DETACHED)) {
-                // Usb device was disconnected. send an intent to the Main Activity
+                // Usb device was disconnected. send an intent to the Activities
                 Intent intent = new Intent(ACTION_USB_DISCONNECTED);
+                if (state.getUSB()) {
+                    state.setUSB(false);
+                }
                 arg0.sendBroadcast(intent);
                 serialPortConnected = false;
                 serialPort.close();
             }
         }
     };
+
+    public UsbSerialInterface.UsbReadCallback mCallback = new UsbSerialInterface.UsbReadCallback() {  // for test read after open.
+        @Override
+        public void onReceivedData(byte[] arg0) {
+            try {
+                String data = new String(arg0, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
 
     /*
      * onCreate will be executed when service is started. It configures an IntentFilter to listen for
@@ -97,7 +116,9 @@ public class usbService extends Service {
         }
         this.context = this;
         serialPortConnected = false;
-        usbService.SERVICE_CONNECTED = true;
+        state = new appState(this);
+        state.setUSB(serialPortConnected);
+        SERVICE_CONNECTED = true;
         setFilter();
         usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         findSerialPortDevice();
@@ -112,8 +133,9 @@ public class usbService extends Service {
         if (mLogging){
             String logstring = "usbService Bound";
             Log.d(TAG, logstring);
+            Log.d(TAG, Boolean.toString(SERVICE_CONNECTED));
+
         }
-        new Thread(USBThread).start();
         return binder;
     }
 
@@ -123,13 +145,27 @@ public class usbService extends Service {
             String logstring = "usbService Started";
             Log.d(TAG, logstring);
         }
-        new Thread(USBThread).start();
         return Service.START_NOT_STICKY;
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        super.onUnbind(intent);
+        if (mLogging){
+            String logstring = "usbService unBound";
+            Log.d(TAG, logstring);
+            Log.d(TAG, Boolean.toString(SERVICE_CONNECTED));
+        }
+        return false;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (mLogging){
+            String logstring = "usbService destroyed";
+            Log.d(TAG, logstring);
+        }
         usbService.SERVICE_CONNECTED = false;
     }
 
@@ -212,7 +248,7 @@ public class usbService extends Service {
                     serialPort.setStopBits(UsbSerialInterface.STOP_BITS_1);
                     serialPort.setParity(UsbSerialInterface.PARITY_NONE);
                     serialPort.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
-                    serialPort.read(usbThread.mCallback);
+                    serialPort.read(mCallback);
 
                     // Everything went as expected. Send an intent to MainActivity
                     Intent intent = new Intent(ACTION_USB_READY);

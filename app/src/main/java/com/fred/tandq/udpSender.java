@@ -11,8 +11,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static com.fred.tandq.appState.hubIP;
-import static com.fred.tandq.appState.hubPort;
 
 /**
  * Created by Fred Stein on 25/04/2017.
@@ -20,16 +18,20 @@ import static com.fred.tandq.appState.hubPort;
 
 class udpSender implements Runnable {
     //tag for logging
-    private static final String TAG = udpSender.class.getSimpleName()+"SF 2.0";
+    private static final String TAG = udpSender.class.getSimpleName()+"SF2Debug";
     //flag for logging
-    private boolean mLogging = false;
+    private boolean mLogging = true;
 
     private udpReader udpR;
     private SortedMap<String, MessageXML> udpStack = new TreeMap<>();
     private InetAddress IPout;
     private DatagramSocket socket;
+    private String hubIP;
+    private int hubPort;
 
-    udpSender(LinkedBlockingQueue udpQ){
+    udpSender(LinkedBlockingQueue udpQ, String IP, int Port){
+        hubIP = IP;
+        hubPort = Port;
         try {
             this.socket = new DatagramSocket();
 

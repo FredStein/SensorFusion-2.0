@@ -9,9 +9,7 @@ import static android.hardware.Sensor.TYPE_GRAVITY;
 import static android.hardware.Sensor.TYPE_GYROSCOPE;
 import static android.hardware.Sensor.TYPE_LINEAR_ACCELERATION;
 import static android.hardware.Sensor.TYPE_ROTATION_VECTOR;
-import static com.fred.tandq.appState.getSensorType;
-import static com.fred.tandq.appState.getSensors;
-import static com.fred.tandq.appState.nodeID;
+
 
 /**
  * Created by Fred Stein on 14/04/2017.
@@ -19,30 +17,33 @@ import static com.fred.tandq.appState.nodeID;
 
 class MessageXML {
     //tag for logging
-    private static final String TAG = MessageXML.class.getSimpleName()+"SF 2.0";
+    private static final String TAG = MessageXML.class.getSimpleName()+"SF2Debug";
     //flag for logging
-    private boolean mLogging = false ;
+    private boolean mLogging = true ;
 
     private static final int TYPE_USB = 70000;                                                //TODO: Populate from e_sensors.xml
-    private static HashMap<Integer,mySensor> liveSensors;
+    private String nodeID;
+    private HashMap<Integer,mySensor> activeSensors;
     private static HashMap<String, String> Accelerometer = new HashMap<>();
     private static HashMap<String, String> Gravity = new HashMap<>();
     private static HashMap<String, String> Gyroscope = new HashMap<>();
     private static HashMap<String, String> LinearAcceleration = new HashMap<>();
     private static HashMap<String, String> RotationVector = new HashMap<>();
     private static HashMap<String, String> USB = new HashMap<>();
+    private appState state;
 
-    MessageXML() {
-        liveSensors = getSensors();
+    MessageXML(appState aState) {
+        activeSensors = aState.getSensors();
+        nodeID =aState.getNodeID();
+        state = aState;
     }
-
     public void setVal(HashMap<String, String> sMsg) {
         for (String item: sMsg.keySet()){
             if (mLogging) {
                 Log.d(TAG, item + "," + sMsg.get(item));
             }
         }
-        switch (getSensorType(sMsg.get("Sensor"))) {
+        switch (state.getSensorType(sMsg.get("Sensor"))) {
             case TYPE_ACCELEROMETER:
                 for (String item : sMsg.keySet()) {
                     if (item != "Timestamp" && item != "Sensor") {
@@ -81,8 +82,8 @@ class MessageXML {
                 }break;
         }
     }
-    private String TimeStamp;                               //TODO: Outward ts should be clock time
-                                                            //Presently elapsedRealtime
+    private String TimeStamp;                                                                       //TODO: Outward ts should be clock time
+                                                                                                    //Presently elapsedRealtime
     public String getTimeStamp() {
         return TimeStamp;
     }
@@ -95,7 +96,7 @@ class MessageXML {
 
     public boolean isComplete() {
         Boolean complete = true;
-        for (int item : liveSensors.keySet()) {
+        for (int item : activeSensors.keySet()) {
             switch (item) {
                 case TYPE_ACCELEROMETER:
                     status.put(item, !Accelerometer.keySet().isEmpty());
@@ -127,45 +128,45 @@ class MessageXML {
         HashMap<Integer,String> element = new HashMap<>();
         String xml = "<\u003Fxml version=\"1.0\" encoding=\"utf-8\"\u003F>";
         xml = xml + "<Node Name=\"" + nodeID +"\">";
-        for (int item : liveSensors.keySet()) {
+        for (int item : activeSensors.keySet()) {
             switch (item) {
                 case TYPE_ACCELEROMETER:
-                    String aStr = "<Sensor Type=\""+ liveSensors.get(item).getName() + "\"";
+                    String aStr = "<Sensor Type=\""+ activeSensors.get(item).getName() + "\"";
                     for (String sVar : Accelerometer.keySet()){
                         aStr = aStr + " " + sVar + "=\"" + Accelerometer.get(sVar) +"\"";
                     }
                     element.put(item, aStr + "/>");
                     break;
                 case TYPE_GRAVITY:
-                    String bStr = "<Sensor Type=\""+ liveSensors.get(item).getName() + "\"";
+                    String bStr = "<Sensor Type=\""+ activeSensors.get(item).getName() + "\"";
                     for (String sVar : Gravity.keySet()){
                         bStr = bStr + " " +sVar + "=\"" + Gravity.get(sVar)+"\"";
                     }
                     element.put(item, bStr + "/>");
                     break;
                 case TYPE_GYROSCOPE:
-                    String cStr = "<Sensor Type=\""+ liveSensors.get(item).getName() + "\"";
+                    String cStr = "<Sensor Type=\""+ activeSensors.get(item).getName() + "\"";
                     for (String sVar : Gyroscope.keySet()){
                         cStr = cStr + " " + sVar + "=\"" + Gyroscope.get(sVar)+"\"";
                     }
                     element.put(item, cStr + "/>");
                     break;
                 case TYPE_LINEAR_ACCELERATION:
-                    String dStr = "<Sensor Type=\""+ liveSensors.get(item).getName() + "\"";
+                    String dStr = "<Sensor Type=\""+ activeSensors.get(item).getName() + "\"";
                     for (String sVar : LinearAcceleration.keySet()){
                         dStr = dStr + " " + sVar + "=\"" + LinearAcceleration.get(sVar)+"\"";
                     }
                     element.put(item, dStr + "/>");
                     break;
                 case TYPE_ROTATION_VECTOR:
-                    String eStr = "<Sensor Type=\""+ liveSensors.get(item).getName() + "\"";
+                    String eStr = "<Sensor Type=\""+ activeSensors.get(item).getName() + "\"";
                     for (String sVar : RotationVector.keySet()){
                         eStr = eStr + " " + sVar + "=\"" + RotationVector.get(sVar)+"\"";
                     }
                     element.put(item, eStr + "/>");
                     break;
                 case TYPE_USB:
-                    String fStr = "<Sensor Type=\""+ liveSensors.get(item).getName() + "\"";
+                    String fStr = "<Sensor Type=\""+ activeSensors.get(item).getName() + "\"";
                     for (String sVar : USB.keySet()){
                         fStr = fStr + " " + sVar + "=\"" + USB.get(sVar)+"\"";
                     }

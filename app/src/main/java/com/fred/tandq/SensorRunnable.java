@@ -2,15 +2,18 @@ package com.fred.tandq;
 /*
  * Created by Fred Stein on 14/04/2017.
  * Creates a thread to read a sensorType of TYPE_? and return binned data
- * This iteration averages data received during the bin length (Default: 50 ms)
- * SensorThread explicitly sets the sensor listener hint (from appState) rather than using an android constant (Default: 20000 microseconds-unit of hint)
- * bin and listenHint are available for future use as parameters to the SensorThread constructor
- * :param  int sensorType:      any android sensor
-   :param  Context mContext:    the context starting the thread
-   :param  Queue uQueue:        the queue holding each binned sensor reading (taken off async and built to XML)
+ * This iteration averages data received during the bin length (Default: 500 ms)
+ * SensorRunnable explicitly sets the sensor listener hint (from appState) rather than using an android constant (Default: 20000 microseconds-unit of hint)
+ * bin and listenHint are available for future use as parameters to the SensorRunnable constructor
+ * Display and udp data queue handles are obtained directly from appState
+ * :param  mySensor sensor:     Configuration data for this sensor
+   :param  Context mContext:    Context of the SensorManager
  */
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -20,45 +23,57 @@ import android.util.Log;
 import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static android.content.Context.SENSOR_SERVICE;
-import static com.fred.tandq.SensorActivity.getsHandler;
-import static com.fred.tandq.SensorService.getsDataQ;
-import static com.fred.tandq.appState.getEpoch;
-import static com.fred.tandq.appState.halfTick;
-import static com.fred.tandq.appState.listenHint;
-import static com.fred.tandq.appState.sendUDP;
-import static com.fred.tandq.appState.tickLength;
 
-
-class SensorThread implements Runnable {
+class SensorRunnable implements Runnable {
     //tag for logging
-    private static final String TAG = SensorThread.class.getSimpleName()+"SF 2.0";
+    private static final String TAG = SensorRunnable.class.getSimpleName()+"SF2Debug";
     //flag for logging
-    private static final boolean mLogging = false;
+    private static final boolean mLogging = true;
 
+    private SensorActivity.sensorHandler sHandler;
     private int sensorType;
     private mySensor fSensor;
-    private SensorActivity.sensorHandler sHandler = getsHandler();
-    private dataQWriter dataQW;
+    private udpQWriter dataQW;
     private SensorManager sM;
     private Sensor sensor;
     private SensorEventListener mListener;
     private long mEpoch;
     private int counts = 1;
     private float[] acc;
-    private LinkedBlockingQueue sDataQ;
+    private long tickLength;
+    private long halfTick;
+    private int listenHint;
+    private boolean upDateData = false;
+    private boolean sendData = false;
 
-    SensorThread(mySensor sensor, Context mContext ) {
-        this.sensorType = sensor.getType();
-        this.fSensor = sensor;
-        Log.d(TAG, fSensor.getName()+", " + Integer.toString(sensorType));
-        this.sM = (SensorManager) mContext.getSystemService(SENSOR_SERVICE);
-        this.sensor = sM.getDefaultSensor(sensorType);
-        sDataQ = getsDataQ();
-        mEpoch = getEpoch();
+    private final BroadcastReceiver txListener = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()) {
+                case SensorActivity.TOGGLE_DISPLAY:
+                    upDateData = !upDateData;
+                    break;
+                case SensorActivity.TOGGLE_SEND: // USB DISCONNECTED
+                    sendData = !sendData;
+                    break;
+            }
+        }
+    };
 
-        dataQW = new dataQWriter(sDataQ);
-        this.mListener = new SensorEventListener() {
+    SensorRunnable(mySensor mSensor, SensorManager sMgr, LinkedBlockingQueue dataQ, appState aState ) {
+        fSensor = mSensor;
+        sensorType = mSensor.getType();
+        sM = sMgr;
+        sensor = sM.getDefaultSensor(sensorType);
+        mEpoch = aState.getEpoch();
+        tickLength = aState.getTick();
+        halfTick = aState.getHalfTick();
+        listenHint = aState.getHint();
+        sHandler = aState.getsHandler();
+        dataQW = new udpQWriter(dataQ);
+        setFilters(txListener,aState.getContext());
+
+        mListener = new SensorEventListener() {        //TODO: Look at where declared wrt usbRunnable. In constructor vs as field
             @Override
             public void onSensorChanged(SensorEvent event) {
                 int nValues = event.values.length;
@@ -107,8 +122,9 @@ class SensorThread implements Runnable {
         for (int i = 0; i < nValues; i++){
             avData[i] = sData[i] / counts;
         }
-        sHandler.obtainMessage(sensorType,displayFormat(avData, ts)).sendToTarget();
-        if (sendUDP){
+        if (sHandler != null && upDateData);
+            sHandler.obtainMessage(sensorType,displayFormat(avData, ts)).sendToTarget();
+        if (sendData){
             try {
                 dataQW.queue.put(udpFormat(avData,ts));
             } catch (InterruptedException e) {
@@ -141,10 +157,10 @@ class SensorThread implements Runnable {
         return udpPkt;
     }
 
-    public class dataQWriter implements Runnable {
+    public class udpQWriter implements Runnable {
         private LinkedBlockingQueue queue;
 
-        public dataQWriter(LinkedBlockingQueue q) {
+        public udpQWriter(LinkedBlockingQueue q) {
             this.queue = q;
         }
 
@@ -155,10 +171,16 @@ class SensorThread implements Runnable {
         @Override
         public void run() {                                                             //TODO Need thread stop condition
             if (mLogging) {
-                String logString = " dataQWriter started";
-                Log.v(TAG, logString);
+                String logString = " udpQWriter started";
+                Log.d(TAG, logString);
             }
         }
+    }
+    private void setFilters(BroadcastReceiver mReciever, Context context) {                     //USB Filter configuration and reciever registration
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(SensorActivity.TOGGLE_DISPLAY);
+        filter.addAction(SensorActivity.TOGGLE_SEND);
+        context.registerReceiver(mReciever, filter);
     }
 }
 

@@ -8,29 +8,26 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static com.fred.tandq.SensorService.getsDataQ;
-
 /**
  * Created by Fred Stein on 25/04/2017.
  */
 
 class XMLAggregator implements Runnable {
     //tag for logging
-    private static final String TAG = XMLAggregator.class.getSimpleName()+"SF 2.0";
+    private static final String TAG = XMLAggregator.class.getSimpleName()+"SF2Debug";
     //flag for logging
-    private boolean mLogging = false;
+    private boolean mLogging = true;
 
     private dataQReader rQs;
     private LinkedBlockingQueue udpQ = new LinkedBlockingQueue();
     private udpWriteQ udpWQ;
     private SortedMap<String, MessageXML> msgStack = new TreeMap<>();
-    private udpSender udpS = new udpSender(udpQ);
-    private LinkedBlockingQueue sDataQ;
+    private udpSender udpS;
 
-    XMLAggregator() {
+    XMLAggregator(LinkedBlockingQueue dataQ, final appState aState) {
+        udpS = new udpSender(udpQ,aState.getIP(),aState.getPort());
         udpWQ = new udpWriteQ(udpQ);
-        sDataQ = getsDataQ();
-        rQs = new dataQReader(sDataQ){
+        rQs = new dataQReader(dataQ){
             @Override
             public void run(){
                 while (true) {
@@ -41,7 +38,7 @@ class XMLAggregator implements Runnable {
                         }
                         String ts = new String(msg.get("Timestamp"));
                         if (!msgStack.containsKey(ts)) {
-                            MessageXML local = new MessageXML();
+                            MessageXML local = new MessageXML(aState);
                             local.setTimeStamp(ts);
                             local.setVal(msg);
                             msgStack.put(ts, local);
@@ -83,7 +80,7 @@ class XMLAggregator implements Runnable {
         }
 
         @Override
-        public void run() {                                     //Overiden will not execute
+        public void run() {                                     //Overidden will not execute
             if (mLogging){
                 String logString = " dataQReader Started";
                 Log.d(TAG, logString);

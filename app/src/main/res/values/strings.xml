@@ -1,11 +1,11 @@
 <resources>
     <string name="app_name">Sensor Node</string>
     <string name="button_sensors">Display Sensor Values</string>
-    <string name="sensors_present">Sensors Present</string>
-    <string name="sensors_absent">Sensors Absent</string>
+    <string name="sensors_present">"Sensors Present\n"</string>
+    <string name="sensors_absent">"Sensors Absent\n"</string>
     <string name="noSensors">None of the requested sensors present\nCannot proceede</string>
     <string name="present">"Requested sensors present"</string>
-    <string name="absent">"Some sensors not available\nFull functionality not available"</string>
+    <string name="absent">"Some sensors not available\nFull functionality may not be available"</string>
     <string name="Accel_group">Accelerometer</string>
     <string name="Gyro_group">Gyroscope</string>
     <string name="LA">Linear\nAcceleration</string>
@@ -39,5 +39,7 @@
     <string name="defaultReport_Freq">500</string>
     <string name="nodeSettings">Click to change Node Settings</string>
     <string name="DisplayValues">Sensor Values</string>
+    <string name="USB">USB</string>
+    <string name="No_USB">NO USB</string>
 
 </resources>
