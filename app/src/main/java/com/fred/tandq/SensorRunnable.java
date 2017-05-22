@@ -3,9 +3,9 @@ package com.fred.tandq;
  * Created by Fred Stein on 14/04/2017.
  * Creates a thread to read a sensorType of TYPE_? and return binned data
  * This iteration averages data received during the bin length (Default: 500 ms)
- * SensorRunnable explicitly sets the sensor listener hint (from appState) rather than using an android constant (Default: 20000 microseconds-unit of hint)
+ * SensorRunnable explicitly sets the sensor listener hint (from nodeControlle) rather than using an android constant (Default: 20000 microseconds-unit of hint)
  * bin and listenHint are available for future use as parameters to the SensorRunnable constructor
- * Display and udp data queue handles are obtained directly from appState
+ * Display and udp data queue handles are obtained directly from nodeControlle
  * :param  mySensor sensor:     Configuration data for this sensor
    :param  Context mContext:    Context of the SensorManager
  */
@@ -60,18 +60,18 @@ class SensorRunnable implements Runnable {
         }
     };
 
-    SensorRunnable(mySensor mSensor, SensorManager sMgr, LinkedBlockingQueue dataQ, appState aState ) {
+    SensorRunnable(mySensor mSensor, SensorManager sMgr, LinkedBlockingQueue dataQ ) {
         fSensor = mSensor;
         sensorType = mSensor.getType();
         sM = sMgr;
         sensor = sM.getDefaultSensor(sensorType);
-        mEpoch = aState.getEpoch();
-        tickLength = aState.getTick();
-        halfTick = aState.getHalfTick();
-        listenHint = aState.getHint();
-        sHandler = aState.getsHandler();
+        mEpoch = nodeController.getNodeCtrl().getEpoch();
+        tickLength = nodeController.getNodeCtrl().getTick();
+        halfTick = nodeController.getNodeCtrl().getHalfTick();
+        listenHint = nodeController.getNodeCtrl().getHint();
+        sHandler = nodeController.getsHandler();
         dataQW = new udpQWriter(dataQ);
-        setFilters(txListener,aState.getContext());
+        setFilters(txListener,nodeController.getNodeCtrl());
 
         mListener = new SensorEventListener() {        //TODO: Look at where declared wrt usbRunnable. In constructor vs as field
             @Override
@@ -113,7 +113,7 @@ class SensorRunnable implements Runnable {
             Log.d(TAG, logString);
         }
         new Thread(dataQW).start();                                                         //TODO: Need thread stop condition             refer to publishEpoch -> one of these is not needed!
-        sM.registerListener(mListener, sensor, listenHint);                             // listenHint set in appState. default = 50ms
+        sM.registerListener(mListener, sensor, listenHint);                             // listenHint set in nodeControlle. default = 50ms
     }
 
     private void publishEpoch(float[] sData, int counts, final long ts) {
@@ -122,8 +122,9 @@ class SensorRunnable implements Runnable {
         for (int i = 0; i < nValues; i++){
             avData[i] = sData[i] / counts;
         }
-        if (sHandler != null && upDateData);
-            sHandler.obtainMessage(sensorType,displayFormat(avData, ts)).sendToTarget();
+        if (sHandler != null){
+            if(upDateData) sHandler.obtainMessage(sensorType,displayFormat(avData, ts)).sendToTarget();
+        }
         if (sendData){
             try {
                 dataQW.queue.put(udpFormat(avData,ts));
