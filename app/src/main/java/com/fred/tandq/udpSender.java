@@ -10,6 +10,7 @@ import java.net.UnknownHostException;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -20,18 +21,36 @@ class udpSender implements Runnable {
     //tag for logging
     private static final String TAG = udpSender.class.getSimpleName()+"SF2Debug";
     //flag for logging
-    private boolean mLogging = true;
+    private boolean mLogging = false;
 
-    private udpReader udpR;
-    private SortedMap<String, MessageXML> udpStack = new TreeMap<>();
+    private AtomicBoolean startThread = new AtomicBoolean(false);
+    public boolean stopMe(){
+        while (udpR.isRunning()){}
+        while (udpW.isRunning()){}
+        this.startThread.set(false);
+        return this.startThread.get();
+    }
+    public void setRunning(boolean runState){
+        this.startThread.set(runState);
+    }
+    private final SortedMap<String, MessageXML> udpStack = new TreeMap<>();             //TODO: Check if this effective in ordering timestamps
+    private LinkedBlockingQueue udpRxQ;
     private InetAddress IPout;
     private DatagramSocket socket;
     private String hubIP;
     private int hubPort;
+    private udpQReader udpR;
+    private Thread udpRxThread;
+    private udpTx udpW;
+    private Thread udpTxThread;
 
     udpSender(LinkedBlockingQueue udpQ, String IP, int Port){
-        hubIP = IP;
-        hubPort = Port;
+        if (mLogging) {
+            String logString = " udpSender created";
+            Log.d(TAG, logString);
+        }
+        this.hubIP = IP;
+        this.hubPort = Port;
         try {
             this.socket = new DatagramSocket();
 
@@ -44,46 +63,118 @@ class udpSender implements Runnable {
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
-        udpR = new udpReader(udpQ);
+        this.udpRxQ = udpQ;
+        this.udpR = new udpQReader(udpQ);
+        this.udpW = new udpTx();
     }
 
     @Override
     public void run() {
-        new Thread(udpR).start();
-    }
-
-    private class udpReader implements Runnable {
-        private LinkedBlockingQueue queue;
-
-        public udpReader(LinkedBlockingQueue q) {
-            this.queue = q;
+        if (mLogging) {
+            String logString = " udpSender started";
+            Log.d(TAG, logString);
         }
-
-        @Override
-        public void run() {
-            while (true) {
-                try {
-                    MessageXML msg = (MessageXML) queue.take();
-                    udpStack.put(msg.getTimeStamp(),msg);
-                    udpTx(msg.getXmlString());
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+        while (startThread.get()){
+            if (!udpR.isRunning()){
+                if(udpRxQ.size() > 0){
+                    udpR.setRunning(true);
+                    udpRxThread = new Thread(udpR);
+                    udpRxThread.start();
+                }
+            }
+            if(!udpW.isRunning()){
+                synchronized (udpStack){
+                    if(udpStack.size()>0) {
+                        udpW.setRunning(true);
+                        udpTxThread = new Thread(udpW);
+                        udpTxThread.start();
+                    }
                 }
             }
         }
     }
 
-    private void udpTx(String msgStr){
-        int msg_length = msgStr.length();
-        byte[] message = msgStr.getBytes();
-        DatagramPacket p = new DatagramPacket(message, msg_length, IPout, hubPort);
-        try {
-            socket.send(p);
+    private class udpQReader implements Runnable {
+        LinkedBlockingQueue queue;
+        private AtomicBoolean running = new AtomicBoolean(false);
+        public boolean isRunning(){
+            return running.get();
+        }
+        public void setRunning(boolean running) {
+            this.running.set(running);
+        }
+        udpQReader(LinkedBlockingQueue q) {
+            this.queue = q;
             if (mLogging) {
-                Log.d(TAG, "XML Out : " + msgStr);
+                String logString = " udpQReader created";
+                Log.d(TAG, logString);
             }
-        }catch (java.io.IOException e) {
-            e.printStackTrace();
+        }
+        @Override
+        public void run() {
+            if (mLogging) {
+                String logString = " udpQReader started";
+                Log.d(TAG, logString);
+            }
+            while (running.get()) {
+                try {
+                    MessageXML msg = (MessageXML) queue.take();
+                    synchronized(udpStack){
+                        udpStack.put(msg.getTimeStamp(),msg);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (queue.size() > 0){
+                    running.set(true);
+                } else{
+                    running.set(false);
+                }
+            }
+        }
+    }
+
+    private class udpTx implements Runnable {
+        private AtomicBoolean running = new AtomicBoolean(false);
+        public boolean isRunning(){
+            return running.get();
+        }
+        public void setRunning(boolean running) {
+            this.running.set(running);
+        }
+        udpTx() {
+            if (mLogging) {
+                String logString = " udpTx created";
+                Log.d(TAG, logString);
+            }
+        }
+        @Override
+        public void run(){
+            if (mLogging) {
+                String logString = " udpTx started";
+                Log.d(TAG, logString);
+            }
+            while (running.get()){
+                synchronized(udpStack){
+                    String msgStr = udpStack.remove(udpStack.firstKey()).getXmlString();
+                    byte[] message = msgStr.getBytes();
+                    int msg_length = msgStr.length();
+                    DatagramPacket p = new DatagramPacket(message, msg_length, IPout, hubPort);
+                    try {
+                        socket.send(p);
+                        if (mLogging) {
+                            Log.d(TAG, "XML Out : " + msgStr);
+                        }
+                    }catch (java.io.IOException e) {
+                        e.printStackTrace();
+                    }
+                    if (udpStack.size() > 0){
+                        running.set(true);
+                    } else{
+                        running.set(false);
+                    }
+                }
+            }
         }
     }
 }

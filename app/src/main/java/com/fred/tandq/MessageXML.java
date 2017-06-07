@@ -3,6 +3,7 @@ package com.fred.tandq;
 import android.util.Log;
 
 import java.util.HashMap;
+import java.util.Set;
 
 import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.Sensor.TYPE_GRAVITY;
@@ -19,31 +20,40 @@ class MessageXML {
     //tag for logging
     private static final String TAG = MessageXML.class.getSimpleName()+"SF2Debug";
     //flag for logging
-    private boolean mLogging = true ;
+    private boolean mLogging = false ;
 
     private static final int TYPE_USB = 70000;                                                //TODO: Populate from e_sensors.xml
     private String nodeID;
     private HashMap<Integer,mySensor> activeSensors;
+    private Set <Integer> sTypes;
     private static HashMap<String, String> Accelerometer = new HashMap<>();
     private static HashMap<String, String> Gravity = new HashMap<>();
     private static HashMap<String, String> Gyroscope = new HashMap<>();
     private static HashMap<String, String> LinearAcceleration = new HashMap<>();
     private static HashMap<String, String> RotationVector = new HashMap<>();
     private static HashMap<String, String> USB = new HashMap<>();
-    private appState state;
-
-    MessageXML(appState aState) {
-        activeSensors = aState.getSensors();
-        nodeID =aState.getNodeID();
-        state = aState;
+    private String TimeStamp;                                                                       //TODO: Outward ts should be clock time
+    //Presently elapsedRealtime
+    public String getTimeStamp() {
+        return TimeStamp;
     }
+    public void setTimeStamp(String timeStamp) {
+        TimeStamp = timeStamp;
+    }
+
+    MessageXML() {
+        this.activeSensors = nodeController.getNodeCtrl().getSensors();
+        this.sTypes = nodeController.getNodeCtrl().getSensors().keySet();
+        this.nodeID = nodeController.getNodeCtrl().getNodeID();
+    }
+
     public void setVal(HashMap<String, String> sMsg) {
         for (String item: sMsg.keySet()){
             if (mLogging) {
                 Log.d(TAG, item + "," + sMsg.get(item));
             }
         }
-        switch (state.getSensorType(sMsg.get("Sensor"))) {
+        switch (nodeController.getNodeCtrl().getSensorType(sMsg.get("Sensor"))) {
             case TYPE_ACCELEROMETER:
                 for (String item : sMsg.keySet()) {
                     if (item != "Timestamp" && item != "Sensor") {
@@ -82,39 +92,30 @@ class MessageXML {
                 }break;
         }
     }
-    private String TimeStamp;                                                                       //TODO: Outward ts should be clock time
-                                                                                                    //Presently elapsedRealtime
-    public String getTimeStamp() {
-        return TimeStamp;
-    }
-
-    public void setTimeStamp(String timeStamp) {
-        TimeStamp = timeStamp;
-    }
-
-    private HashMap<Integer, Boolean> status = new HashMap<>();
 
     public boolean isComplete() {
         Boolean complete = true;
-        for (int item : activeSensors.keySet()) {
-            switch (item) {
+        HashMap<Integer, Boolean> status = new HashMap<>();
+        for(Integer type : sTypes) {
+//        for (int item : activeSensors.keySet()) {
+            switch (type) {
                 case TYPE_ACCELEROMETER:
-                    status.put(item, !Accelerometer.keySet().isEmpty());
+                    status.put(type, !Accelerometer.keySet().isEmpty());
                     break;
                 case TYPE_GRAVITY:
-                    status.put(item, !Gravity.keySet().isEmpty());
+                    status.put(type, !Gravity.keySet().isEmpty());
                     break;
                 case TYPE_GYROSCOPE:
-                    status.put(item, !Gyroscope.keySet().isEmpty());
+                    status.put(type, !Gyroscope.keySet().isEmpty());
                     break;
                 case TYPE_LINEAR_ACCELERATION:
-                    status.put(item, !LinearAcceleration.keySet().isEmpty());
+                    status.put(type, !LinearAcceleration.keySet().isEmpty());
                     break;
                 case TYPE_ROTATION_VECTOR:
-                    status.put(item, !RotationVector.keySet().isEmpty());
+                    status.put(type, !RotationVector.keySet().isEmpty());
                     break;
                 case TYPE_USB:
-                    status.put(item, !USB.keySet().isEmpty());
+                    status.put(type, !USB.keySet().isEmpty());
                     break;
             }
             for (Boolean val : status.values()) {

@@ -4,9 +4,12 @@ package com.fred.tandq;
 import android.util.Log;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by Fred Stein on 25/04/2017.
@@ -18,92 +21,189 @@ class XMLAggregator implements Runnable {
     //flag for logging
     private boolean mLogging = true;
 
-    private dataQReader rQs;
-    private LinkedBlockingQueue udpQ = new LinkedBlockingQueue();
-    private udpWriteQ udpWQ;
-    private SortedMap<String, MessageXML> msgStack = new TreeMap<>();
-    private udpSender udpS;
+    private AtomicBoolean startThread = new AtomicBoolean(false);
+    public boolean isRunning(){
+        return startThread.get();
+    }
+    public void setRunning(boolean run) {
+        this.startThread.set(run);
+    }
 
-    XMLAggregator(LinkedBlockingQueue dataQ, final appState aState) {
-        udpS = new udpSender(udpQ,aState.getIP(),aState.getPort());
-        udpWQ = new udpWriteQ(udpQ);
-        rQs = new dataQReader(dataQ){
-            @Override
-            public void run(){
-                while (true) {
-                    try {
-                        HashMap<String, String> msg = (HashMap<String, String>) queue.take();
-                        for (String item: msg.keySet()){
-                            Log.d(TAG, item + "," + msg.get(item));
-                        }
-                        String ts = new String(msg.get("Timestamp"));
-                        if (!msgStack.containsKey(ts)) {
-                            MessageXML local = new MessageXML(aState);
-                            local.setTimeStamp(ts);
-                            local.setVal(msg);
-                            msgStack.put(ts, local);
-                        }else {
-                            msgStack.get(ts).setVal(msg);
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    for (String item: msgStack.keySet()){
-                        MessageXML msg = msgStack.get(item);
-                        if (msg.isComplete());
-                        publishXML(msg);
-                    }
-                }
-            }
-        };
+    public boolean stopMe(){
+        while (sDataQReader.isRunning()){}
+        while (udpQWriter.isRunning()){}
+        udpS.stopMe();
+        startThread.set(false);
+        return true;
+    }
+    private LinkedBlockingQueue udpQ = new LinkedBlockingQueue();
+    private LinkedBlockingQueue sensorDataQ;
+    private final SortedMap<String, MessageXML> msgStack = new TreeMap<>();
+    private udpQWrite udpQWriter;
+    private Thread udpWriterThread;
+    private dataQReader sDataQReader;
+    private Thread sDataReaderThread;
+    private udpSender udpS;
+    private Thread udpSenderThread;
+
+    XMLAggregator(LinkedBlockingQueue dataQ) {
+        if (mLogging) {
+            String logString = " XMLAggregator created";
+            Log.d(TAG, logString);
+        }
+        sensorDataQ = dataQ;
+        sDataQReader = new dataQReader(dataQ);
+        udpQWriter = new udpQWrite(udpQ);
+        udpS = new udpSender(udpQ,nodeController.getNodeCtrl().getIP(),nodeController.getNodeCtrl().getPort());
+        udpSenderThread = new Thread(udpS);
     }
 
     @Override
     public void run() {
-        new Thread(rQs).start();
-        new Thread(udpS).start();
-        new Thread(udpWQ).start();
-    }
-
-    private void publishXML(MessageXML udpMsg){
-        try {
-            udpWQ.queue.put(udpMsg);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (mLogging){
+            String logString = "XMLAggregator Started";
+            Log.d(TAG, logString);
         }
-    }
-
-    private class dataQReader implements Runnable {
-        public LinkedBlockingQueue queue;
-        public dataQReader(LinkedBlockingQueue q) {
-            this.queue = q;
-        }
-
-        @Override
-        public void run() {                                     //Overidden will not execute
-            if (mLogging){
-                String logString = " dataQReader Started";
-                Log.d(TAG, logString);
+        udpS.setRunning(true);
+        udpSenderThread.start();
+        while(startThread.get()){
+            if (!sDataQReader.isRunning()){
+                if (sensorDataQ.size() > 0){
+                    sDataQReader.setRunning(true);
+                    sDataReaderThread = new Thread(sDataQReader);
+                    sDataReaderThread.start();
+                }
+            }
+//            Log.d(TAG,Integer.toString(msgStack.size()));
+            if (!udpQWriter.isRunning()){
+                synchronized (msgStack){
+                    if(msgStack.size() > 0){
+                        udpQWriter.setRunning(true);
+                        udpWriterThread = new Thread(udpQWriter);
+                        udpWriterThread.start();
+                    }
+                }
             }
         }
     }
 
-    public class udpWriteQ implements Runnable {
-        private LinkedBlockingQueue queue;
-
-        public udpWriteQ(LinkedBlockingQueue q) {
-            this.queue = q;
-        }
-
+    private class dataQReader implements Runnable {
+        LinkedBlockingQueue queue;
+        private AtomicBoolean running = new AtomicBoolean(false);
         public boolean isRunning(){
-            return true;
+            return running.get();
+        }
+        public void setRunning(boolean running) {
+            this.running.set(running);
+        }
+        public dataQReader(LinkedBlockingQueue q) {
+            this.queue = q;
+            if (mLogging) {
+                String logString = " dataQReader created";
+                Log.d(TAG, logString);
+            }
         }
 
         @Override
-        public void run() {                             //TODO Thread stop condition
-            if (mLogging) {
-                String logString = " udpWriteQ Started";
+        public void run() {                                             //Overidden
+            if (mLogging){
+                String logString = "dataQReader started";
                 Log.d(TAG, logString);
+            }
+            while (running.get()) {
+                try {
+                    HashMap<String, String> msg = (HashMap<String, String>) queue.take();
+                    for (String item: msg.keySet()){
+                        if (mLogging){
+                            String logstring =  item + "," + msg.get(item);
+                            Log.d(TAG, logstring);
+                        }
+                    }
+                    String ts = msg.get("Timestamp");
+                    synchronized (msgStack){
+ //                       Log.d(TAG, Integer.toString(msgStack.size()));
+                        if (!msgStack.containsKey(ts)) {
+                            MessageXML local = new MessageXML();
+                            local.setTimeStamp(ts);
+                            local.setVal(msg);
+                            msgStack.put(ts, local);
+//                            Log.d(TAG, Integer.toString(msgStack.size()));
+                        }else {
+                            msgStack.get(ts).setVal(msg);
+                        }
+//                        Log.d(TAG, Integer.toString(msgStack.size()));
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (queue.size() > 0){
+                    running.set(true);
+                }else{
+                    running.set(false);
+                }
+            }
+        }
+    }
+
+/*
+    private void publishXML(){
+        for (String item: msgStack.keySet()){
+            MessageXML msg = msgStack.get(item);
+            if (msg.isComplete());
+            try {
+                udpWQ.queue.put(udpMsg);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+*/
+
+
+    public class udpQWrite implements Runnable {
+        private AtomicBoolean running = new AtomicBoolean(false);
+        public boolean isRunning(){
+            return running.get();
+        }
+        public void setRunning(boolean running) {
+            this.running.set(running);
+        }
+        LinkedBlockingQueue queue;
+        udpQWrite(LinkedBlockingQueue q) {
+            this.queue  = q;
+            if (mLogging) {
+                String logString = " udpQWrite created";
+                Log.d(TAG, logString);
+            }
+        }
+        @Override
+        public void run() {                                             //Not Overriden
+            if (mLogging) {
+                String logString = " udpQWrite started";
+                Log.d(TAG, logString);
+            }
+            while (running.get()){
+                synchronized (msgStack){
+                    for(Iterator<Map.Entry<String, MessageXML>> it = msgStack.entrySet().iterator(); it.hasNext(); ) {
+                        Map.Entry<String, MessageXML> entry = it.next();
+//                        Log.d(TAG, entry.getValue().getXmlString() );
+//                        Log.d(TAG, Boolean.toString(entry.getValue().isComplete()));
+                        if(entry.getValue().isComplete()) {
+                            MessageXML msg = entry.getValue();
+                            try {
+                                queue.put(msg);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            it.remove();
+                        }
+                    }
+                    if (msgStack.size() > 0){
+                        running.set(true);
+                    }else{
+                        running.set(false);
+                    }
+                }
             }
         }
     }

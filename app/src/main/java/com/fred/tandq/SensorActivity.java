@@ -1,19 +1,17 @@
 package com.fred.tandq;
 
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +21,13 @@ import android.widget.ToggleButton;
 
 import java.util.HashMap;
 
+import static com.fred.tandq.nodeController.getsHandler;
+import static com.fred.tandq.nodeController.isDisplayData;
+import static com.fred.tandq.nodeController.isSendUDP;
+import static com.fred.tandq.nodeController.setDisplayData;
+import static com.fred.tandq.nodeController.setSendUDP;
+import static com.fred.tandq.nodeController.setsHandler;
+
 public class SensorActivity extends AppCompatActivity {
     //tag for logging
     private static final String TAG = SensorActivity.class.getSimpleName()+"SF2Debug";
@@ -31,14 +36,10 @@ public class SensorActivity extends AppCompatActivity {
 
     public static final String TOGGLE_SEND = "toggle_display";
     public static final String TOGGLE_DISPLAY = "toggle_send";
-    private usbService USBService;                                              //Initialise as null or is null default?
-    private appState state;
     private ToggleButton displayData;
     private ToggleButton udpSend;
     private Menu appBarMenu;
     private TextView tDisp;
-    private sensorHandler sHandler;
-    private HashMap<Integer, mySensor> activeSensors;
 
     /*  This activity only responds to connected / disconnected / not supported signals
     */
@@ -46,36 +47,41 @@ public class SensorActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
-                case com.fred.tandq.usbService.ACTION_USB_PERMISSION_GRANTED: // USB PERMISSION GRANTED
-                    appBarMenu.getItem(0).setTitle(getResources().getString(R.string.USB));
+                case SensorService.ACTION_USB_READY:
+                    nodeController.getNodeCtrl().setAppBarTitle(getString(R.string.USB));
+                    appBarMenu.getItem(0).setTitle(nodeController.getNodeCtrl().getAppBarTitle());         // Change indicator at top right
+                    for (Integer item : nodeController.getNodeCtrl().getSensors().keySet()) {
+                        setTVC(nodeController.getNodeCtrl().getSensors().get(item));
+                    }
                     break;
-                case com.fred.tandq.usbService.ACTION_USB_DISCONNECTED: // USB DISCONNECTED
+                case SensorService.ACTION_USB_DISCONNECTED:
                     Toast.makeText(context, "USB disconnected", Toast.LENGTH_SHORT).show();
-                    appBarMenu.getItem(0).setTitle(getResources().getString(R.string.No_USB));
+                    nodeController.getNodeCtrl().setAppBarTitle(getString(R.string.No_USB));
+                    appBarMenu.getItem(0).setTitle(nodeController.getNodeCtrl().getAppBarTitle());         // Change indicator at top right
                     break;
-                case com.fred.tandq.usbService.ACTION_USB_NOT_SUPPORTED: // USB NOT SUPPORTED
-                    Toast.makeText(context, "USB device not supported", Toast.LENGTH_SHORT).show();
+                case SensorService.ACTION_USB_NOT_SUPPORTED:
+                    Toast nsToast = Toast.makeText(context, "USB device not supported", Toast.LENGTH_SHORT);
+                    nsToast.setGravity(Gravity.TOP|Gravity.RIGHT, 0, 0);
+                    nsToast.show();
+                    break;
+                case SensorService.ACTION_CDC_DRIVER_NOT_WORKING:
+                    Toast cdcToast = Toast.makeText(context, "CDC Driver not working", Toast.LENGTH_SHORT);
+                    cdcToast.setGravity(Gravity.TOP|Gravity.RIGHT, 0, 0);
+                    cdcToast.show();
+                    break;
+                case SensorService.ACTION_USB_DEVICE_NOT_WORKING:
+                    Toast nwToast = Toast.makeText(context, "USB device not working", Toast.LENGTH_SHORT);
+                    nwToast.setGravity(Gravity.TOP|Gravity.RIGHT, 0, 0);
+                    nwToast.show();
                     break;
             }
-        }
-    };
-
-    private final ServiceConnection usbConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName arg0, IBinder arg1) {
-            USBService = ((com.fred.tandq.usbService.UsbBinder) arg1).getService();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            USBService = null;
         }
     };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (mLogging){
-            String logstring = "Sensor Activity Created";
+            String logstring = "Sensor Activity onCreate";
             Log.d(TAG, logstring);
         }
         super.onCreate(savedInstanceState);
@@ -86,14 +92,14 @@ public class SensorActivity extends AppCompatActivity {
         ab.setDisplayUseLogoEnabled(true);
         ab.setDisplayShowHomeEnabled(true);
 
-        sHandler = new sensorHandler();
-        state = new appState(this);
-        state.initNode();
-        state.setsHandler(sHandler);
+        if (getsHandler() == null)
+        {
+            setsHandler(new sensorHandler());
+        }
+
         tDisp = (TextView) findViewById(R.id.time);
-        activeSensors = state.getSensors();
-        for (Integer item : activeSensors.keySet()) {
-                setTVC(activeSensors.get(item));
+        for (Integer item : nodeController.getNodeCtrl().getSensors().keySet()) {
+                setTVC(nodeController.getNodeCtrl().getSensors().get(item));
         }
     }
 
@@ -101,13 +107,14 @@ public class SensorActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.a_bar_menu_sa, menu);                  // Inflate the menu; this adds items to the action bar
         this.appBarMenu = menu;
+        menu.getItem(0).setTitle(nodeController.getNodeCtrl().getAppBarTitle());;
         return true;
     }                                                                                               //TODO Sort out ActionBar contents. Back arrow + USB indicator
 
     @Override
     public void onStart() {
         if (mLogging){
-            String logstring = "Sensor Activity Started";
+            String logstring = "Sensor Activity onStart";
             Log.d(TAG, logstring);
         }
         super.onStart();
@@ -133,8 +140,7 @@ public class SensorActivity extends AppCompatActivity {
         }
         super.onResume();                                                                       // Start listening for notifications from UsbService
         setFilters(mUsbReceiver,this);
-        startService(new Intent(this, SensorService.class));
-        ((ToggleButton) findViewById(R.id.SendData)).setChecked(state.isSendUDP());
+        ((ToggleButton) findViewById(R.id.SendData)).setChecked(isSendUDP());
     }
 
     @Override
@@ -144,9 +150,8 @@ public class SensorActivity extends AppCompatActivity {
             Log.d(TAG, logstring);
         }        super.onPause();
         unregisterReceiver(mUsbReceiver);
-        unbindService(usbConnection);
-        if (state.isDisplayData()){
-            state.setDisplayData(false);
+        if (isDisplayData()){
+            setDisplayData(false);
             ((ToggleButton) findViewById(R.id.DisplayData)).setChecked(false);
             this.sendBroadcast(new Intent(TOGGLE_DISPLAY));
         }
@@ -154,11 +159,12 @@ public class SensorActivity extends AppCompatActivity {
 
     public void upDateDisplay(View view) {
         boolean checked = ((ToggleButton)view).isChecked();
-        this.sendBroadcast(new Intent(TOGGLE_DISPLAY));
+        Intent dispIntent = new Intent(TOGGLE_DISPLAY);
+        this.sendBroadcast(dispIntent);
         if (checked) {
-            state.setDisplayData(true);
+            setDisplayData(true);
         } else {
-            state.setDisplayData(false);
+            setDisplayData(false);
         }
     }
 
@@ -166,9 +172,9 @@ public class SensorActivity extends AppCompatActivity {
         boolean checked = ((ToggleButton)view).isChecked();
         this.sendBroadcast(new Intent(TOGGLE_SEND));
         if (checked) {
-            state.setSendUDP(true);
+            setSendUDP(true);
         } else {
-            state.setSendUDP(false);
+            setSendUDP(false);
         }
     }
 
@@ -179,20 +185,28 @@ public class SensorActivity extends AppCompatActivity {
             //:Param msg.what   Type of sensor
             HashMap<String, String> sData = (HashMap<String, String>) msg.obj;
             int sensor = msg.what;
+            Log.d(TAG, nodeController.getNodeCtrl().getSensors().get(sensor).getName());
             for (String key : sData.keySet()) {
                 if (!key.equals("Timestamp")){
-                    activeSensors.get(sensor).getTextView(key).setText(sData.get(key));
+                        Log.d(TAG, key);
+                        Log.d(TAG, sData.get(key));
+                    TextView tv = nodeController.getNodeCtrl().getSensors().get(sensor).getTextView(key);
+                    if (tv != null){
+                        tv.setText(sData.get(key));
+                    }
                 }
             }
             tDisp.setText(sData.get("Timestamp"));
         }
     }
 
-    public static void setFilters(BroadcastReceiver usbReciever, Context context) {                     //USB Filter configuration
+    private void setFilters(BroadcastReceiver usbReciever, Context context) {                     //USB Filter configuration and reciever registration
         IntentFilter filter = new IntentFilter();
-        filter.addAction(com.fred.tandq.usbService.ACTION_USB_PERMISSION_GRANTED);
-        filter.addAction(com.fred.tandq.usbService.ACTION_USB_DISCONNECTED);
-        filter.addAction(com.fred.tandq.usbService.ACTION_USB_NOT_SUPPORTED);
+        filter.addAction(SensorService.ACTION_USB_READY);
+        filter.addAction(SensorService.ACTION_USB_DISCONNECTED);
+        filter.addAction(SensorService.ACTION_USB_NOT_SUPPORTED);
+        filter.addAction(SensorService.ACTION_CDC_DRIVER_NOT_WORKING);
+        filter.addAction(SensorService.ACTION_USB_DEVICE_NOT_WORKING);
         context.registerReceiver(usbReciever, filter);
     }
 
@@ -212,14 +226,14 @@ public class SensorActivity extends AppCompatActivity {
         bindService(bindingIntent, serviceConnection, Context.BIND_AUTO_CREATE);
     }*/
 
-    private void setTVC(mySensor sensor){
+    public void setTVC(mySensor sensor){
         for (String tvID : sensor.getFieldIdx().keySet()) {
             int tvi = getResources().getIdentifier(tvID, "id", getPackageName());
             if (tvi == 0){
                 Log.d(TAG, "Sensor Field index value not recognised");
             }
-            Log.d(TAG, tvID);
-            Log.d(TAG, Integer.toString(tvi));
+//            Log.d(TAG, tvID);
+//            Log.d(TAG, Integer.toString(tvi));
             sensor.setTextField(tvID, (TextView) findViewById(tvi));
         }
     }

@@ -1,51 +1,56 @@
 package com.fred.tandq;
 
-import android.content.Context;
+import android.app.Application;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.hardware.SensorManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.HashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
-import static android.content.Context.SENSOR_SERVICE;
 import static android.os.SystemClock.elapsedRealtime;
 import static android.util.Log.getStackTraceString;
 
 /**
- * Created by Fred Stein on 2/05/2017.
+ * Created by Fred Stein on 22/05/2017.
  */
 
-class appState {
+public class nodeController extends Application {
     //tag for logging
-    private final String TAG = appState.class.getSimpleName()+"SF2Debug";
+    private static final String TAG = nodeController.class.getSimpleName()+"SF2Debug";
     //flag for logging
     private boolean mLogging = true;
 
-    private Context stateContext;
-    public Context getContext(){
-        return stateContext;
+    private static nodeController nodeCtrl;
+    public static nodeController getNodeCtrl()
+    {
+        return nodeCtrl;
     }
-    private Resources appRes;
 
-    appState(Context localContext){
-        stateContext = localContext;
-        appRes = stateContext.getResources();
-    }
-    private static boolean initialised = false;
-    public boolean isInitialised() {
-        return initialised;
-    }
     private static boolean sensorStatusDisplayed = false;
-    private static SensorActivity.sensorHandler sHandler;
-    public void setsHandler(SensorActivity.sensorHandler sensorPipe){
-        sHandler = sensorPipe;
+    public static boolean wasStatusDisplayed() {
+        return sensorStatusDisplayed;
     }
-    public SensorActivity.sensorHandler getsHandler(){
-        return sHandler;
+    public static void setStatusDisplayed(boolean sensorStatusDisplayed) {
+        nodeController.sensorStatusDisplayed = sensorStatusDisplayed;
+    }
+
+    private static int intSensSuiteStatus = 0;
+    public static int getSensorPresence() {
+        return intSensSuiteStatus;
+    }
+    private static String[] sensorStatus = new String[2];
+    public static String[] getSensorStatus() {
+        return sensorStatus;
+    }
+
+    private static boolean initialised = false;
+    private static SharedPreferences sharedPref;
+    public SharedPreferences getSpref(){
+        return sharedPref;
     }
     private static long epoch;
     public void setEpoch(){
@@ -54,12 +59,21 @@ class appState {
     public long getEpoch(){
         return epoch;
     }
-    private static boolean USB = false;
-    public boolean getUSB() {
-        return USB;
+
+//    private static boolean USB = false;
+//    public boolean getUSB() {
+//        return USB;
+//    }
+//    public void setUSB(boolean USBstatus) {
+//        USB = USBstatus;
+//    }
+
+    private static String appBarTitle = "";
+    public void setAppBarTitle (String title){
+        appBarTitle = title;
     }
-    public void setUSB(boolean USBstatus) {
-        USB = USBstatus;
+    public String getAppBarTitle(){
+        return appBarTitle;
     }
     private static String nodeID;
     public String getNodeID(){
@@ -69,9 +83,8 @@ class appState {
     public long getTick(){
         return tickLength;
     }
-    private static long halfTick;                                //Also milliseconds
     public long getHalfTick(){
-        return tickLength;
+        return tickLength / 2;
     }
     private static int listenHint;                               //Preference accepts value in ms which is converted to hint native unit (microseconds)
     public int getHint(){
@@ -85,10 +98,6 @@ class appState {
     public String getIP(){
         return hubIP;
     }
-    private static SharedPreferences sharedPref;
-    public SharedPreferences getSpref(){
-        return sharedPref;
-    }
     private static HashMap<Integer, mySensor> activeSensors = new HashMap<>();
     public HashMap<Integer, mySensor> getSensors(){
         return activeSensors;
@@ -100,52 +109,94 @@ class appState {
             }
         return 0;
     }
+    public static void removeActiveSensor(Integer type){
+        activeSensors.remove(type);
+        SensorThreads.remove(type);
+    }
+
+    private static SensorActivity.sensorHandler sHandler;
+    public static void setsHandler(SensorActivity.sensorHandler sensorPipe){
+        sHandler = sensorPipe;
+    }
+    public static SensorActivity.sensorHandler getsHandler(){
+        return sHandler;
+    }
+
     private static boolean displayData = false;
-    public boolean isDisplayData() {
+    public static boolean isDisplayData() {
         return displayData;
     }
-    public void setDisplayData(boolean dData) {
+    public static void setDisplayData(boolean dData) {
         displayData = dData;
     }
     private static boolean sendUDP = false;
-    public boolean isSendUDP() {
+    public static boolean isSendUDP() {
         return sendUDP;
     }
-    public void setSendUDP(boolean sUDP) {
+    public static void setSendUDP(boolean sUDP) {
         sendUDP = sUDP;
     }
 
-    /*TODO: Create Config page(S) to configure sensors used by node
-    * Sensors available to app added here - presently the suite in which the app is 'interested' read from i_sensorss.xml and e_sensorss.xml
-    * e_sensors is assumed to contain one sensor
-    * Display page is VERY static and app will crash if expected sensors and
-    * display page do not match. Sensor re-configuration requires reconfiguration of
-    * display page and TextView naming convention (Abb+dimension name) must be exactly observed
-    * OK for Proof-of-Concept but not elegant.  Note also app 'expects' data of specific
-    * /type and content from USB
-    * */
-    public void initNode() {
-        initialised = true;
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(stateContext);
-        tickLength = Long.parseLong(sharedPref.getString("reportFrequency",stateContext.getString(R.string.defaultReport_Freq)));
-        halfTick = tickLength / 2;
-        setEpoch();
-        nodeID = sharedPref.getString("NodeID",stateContext.getString(R.string.defaultNodeID));
-        hubPort = Integer.parseInt(sharedPref.getString("Port",stateContext.getString(R.string.defaultPort)));
-        hubIP = sharedPref.getString("hubAddress",stateContext.getString(R.string.defaultHubIP));
-        listenHint = Integer.parseInt(sharedPref.getString("sampleFrequency",stateContext.getString(R.string.defaultSample_Freq)));
-        listenHint = listenHint * 1000;         //Convert to microseconds (See above)
+    private static usbRunnable.usbListener mCallback;
+    public static usbRunnable.usbListener getusbCallback() {
+        return mCallback;
+    }
+    public static void setusbCallback(usbRunnable.usbListener mCallback) {
+        nodeController.mCallback = mCallback;
+    }
+    LinkedBlockingQueue sDataQ = new LinkedBlockingQueue();
+    private static HashMap<Integer, Thread> SensorThreads = new HashMap<>();
+    public static Thread getThread (Integer type){
+        if (SensorThreads.containsKey(type)){
+            return SensorThreads.get(type);
+        }else return null;
+    }
+    private static XMLAggregator XMLC;
+    public XMLAggregator getAggregator(){
+        return XMLC;
+    }
 
-        setInternalSensors();
-        if (USB){
-            setExtSensors();
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        nodeCtrl = this;
+        if (mLogging){
+            String logstring = "Node Controller Created";
+            Log.d(TAG, logstring);
         }
+        setAppBarTitle(getString(R.string.No_USB));
+        SensorManager sm = (SensorManager) getSystemService(SENSOR_SERVICE);
+//        intSensorStatus(sm, rp);
+
+//        startService(new Intent (this,usbService.class));            // Start UsbService(if it was not started before) and Bind it
+        initNode();
+        setInternalSensors(sm);
+        startService(new Intent(this, SensorService.class));
+/*        if (USB){
+            setAppBarTitle(getString(R.string.USB));
+            setExtSensors();
+        }*/
+    }
+
+    public void initNode() {
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        tickLength = Long.parseLong(sharedPref.getString("reportFrequency",getString(R.string.defaultReport_Freq)));
+        setEpoch();
+        nodeID = sharedPref.getString("NodeID",getString(R.string.defaultNodeID));
+        hubPort = Integer.parseInt(sharedPref.getString("Port",getString(R.string.defaultPort)));
+        hubIP = sharedPref.getString("hubAddress",getString(R.string.defaultHubIP));
+        listenHint = Integer.parseInt(sharedPref.getString("sampleFrequency",getString(R.string.defaultSample_Freq)));
+        listenHint = listenHint * 1000;         //Convert to microseconds (See above)
+        XMLC = new XMLAggregator(sDataQ);
+
+        initialised = true;
         Log.d(TAG, "Node initialised.  Initialised is: " + Boolean.toString(initialised));
     }
 
-    private void setInternalSensors(){                                       //TODO: Generalise for internal / external sensor discovery / setup
-        SensorManager iSM = (SensorManager) stateContext.getSystemService(SENSOR_SERVICE);
-        XmlResourceParser sN = appRes.getXml(R.xml.i_sensors);
+    private void setInternalSensors(SensorManager sm){                                       //TODO: Generalise for internal / external sensor discovery / setup
+        sensorStatus[0] = getString(R.string.sensors_present);
+        sensorStatus[1] = getString(R.string.sensors_absent);
+        XmlResourceParser sN = getResources().getXml(R.xml.i_sensors);
         Integer temp = 0;
         String[] dims;
         try{
@@ -162,8 +213,18 @@ class appState {
 //                            Log.d(TAG, String.valueOf(type));
 //                            Log.d(TAG, abbr);
                             temp = type;
-                            if (iSM.getDefaultSensor(temp) != null){
+                            if (sm.getDefaultSensor(type) != null){
                                 activeSensors.put(type,new mySensor(name, type, abbr));
+                                SensorRunnable sr = new SensorRunnable(activeSensors.get(type),sm,sDataQ);
+                                sr.setRunning(true);
+                                SensorThreads.put(type, new Thread(sr));
+                                sensorStatus[0] = sensorStatus[0] + name +"\n";
+                                if (intSensSuiteStatus != 1){
+                                    intSensSuiteStatus = 2;
+                                }
+                            }else{
+                                sensorStatus[1] = sensorStatus[1] + name +"\n";
+                                intSensSuiteStatus = 1;
                             }
                         }else if (sN.getName().equals("dimensions")){
                             int nAtts = sN.getAttributeCount();
@@ -172,7 +233,7 @@ class appState {
                                 dims[k] = sN.getAttributeValue(k);
 //                                Log.d(TAG, dims[k]);
                             }
-                            if (iSM.getDefaultSensor(temp) != null){
+                            if (sm.getDefaultSensor(temp) != null){
                                 activeSensors.get(temp).setDim(dims);
                             }
                         }
@@ -192,7 +253,7 @@ class appState {
     public void setExtSensors(){
         //External Sensor configured here
         //This runs when USB == true
-        XmlResourceParser sN = appRes.getXml(R.xml.e_sensors);
+        XmlResourceParser sN = getResources().getXml(R.xml.e_sensors);
         Integer temp = 0;
         String[] dims;
         try{
@@ -210,6 +271,9 @@ class appState {
 //                            Log.d(TAG, abbr);
                             temp = type;
                             activeSensors.put(type,new mySensor(name, type, abbr));
+                            usbRunnable ur = new usbRunnable(activeSensors.get(type),sDataQ);
+                            ur.setRunning(true);
+                            SensorThreads.put(type, new Thread(ur));
                         }else if (sN.getName().equals("dimensions")){
                             int nAtts = sN.getAttributeCount();
                             dims = new String[nAtts];
@@ -217,7 +281,9 @@ class appState {
                                 dims[k] = sN.getAttributeValue(k);
 //                                Log.d(TAG, dims[k]);
                             }
+
                             activeSensors.get(temp).setDim(dims);
+
                         }
                         break;
                     case XmlResourceParser.END_TAG:
@@ -231,16 +297,13 @@ class appState {
             sN.close();
         }
     }
+}
 
-    public void removeSensor (Integer type){
-        activeSensors.remove(type);
-    }
+/*
+    public void intSensorStatus(SensorManager sm, XmlResourceParser maX){
+        sensorStatus[0] = getString(R.string.sensors_present);
+        sensorStatus[1] = getString(R.string.sensors_absent);
 
-    public String[] sensorStatus(SensorManager sm, XmlResourceParser maX){
-        String[] availability = new String[2];
-        String present = stateContext.getString(R.string.sensors_present);
-        String absent = stateContext.getString(R.string.sensors_absent);
-        int presence = 0;
         try{
             while ( maX.getEventType() != XmlResourceParser.END_DOCUMENT) {
                 switch(maX.getEventType()){
@@ -251,13 +314,13 @@ class appState {
                             String name = maX.getAttributeValue(null, "name");
                             Integer type = Integer.parseInt(maX.getAttributeValue(null, "type"));
                             if (sm.getDefaultSensor(type) != null){
-                                availability[0] = present + name +"\n";
-                                if (presence != 1){
-                                    presence = 2;
+                                sensorStatus[0] = sensorStatus[0] + name +"\n";
+                                if (intSensSuiteStatus != 1){
+                                    intSensSuiteStatus = 2;
                                 }
                             }else{
-                                availability[1] = absent + name +"\n";
-                                presence = 1;
+                                sensorStatus[1] = sensorStatus[1] + name +"\n";
+                                intSensSuiteStatus = 1;
                             }
                         }
                         break;
@@ -271,25 +334,6 @@ class appState {
         }finally{
             maX.close();
         }
-
-        //What internal sensors have we got?
-        if(!sensorStatusDisplayed) {
-             switch (presence) {
-                case 0:
-                    Toast.makeText(stateContext.getApplicationContext(),
-                            stateContext.getString(R.string.noSensors), Toast.LENGTH_LONG).show();
-                    break;
-                case 1:
-                    Toast.makeText(stateContext.getApplicationContext(),
-                            stateContext.getString(R.string.absent), Toast.LENGTH_LONG).show();
-                    break;
-                case 2:
-                    Toast.makeText(stateContext.getApplicationContext(),
-                            stateContext.getString(R.string.present), Toast.LENGTH_LONG).show();
-                    break;
-            }
-            sensorStatusDisplayed = true;
-        }
-        return availability;
     }
-}
+*/
+

@@ -22,6 +22,7 @@ import android.util.Log;
 
 import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 class SensorRunnable implements Runnable {
@@ -30,13 +31,25 @@ class SensorRunnable implements Runnable {
     //flag for logging
     private static final boolean mLogging = true;
 
+    private AtomicBoolean startThread = new AtomicBoolean(false);
+    public boolean isRunning(){
+        return startThread.get();
+    }
+    public void setRunning(boolean running) {
+        this.startThread.set(running);
+    }
+
+    public boolean stopMe(){
+        sM.unregisterListener(mListener, sensor);
+//        dataQW.stop();
+//        startThread.set(false);
+        return startThread.get();
+    }
     private SensorActivity.sensorHandler sHandler;
     private int sensorType;
     private mySensor fSensor;
-    private udpQWriter dataQW;
-    private SensorManager sM;
-    private Sensor sensor;
-    private SensorEventListener mListener;
+//    private udpQWriter dataQW;
+//    private Thread sensorDataTxThread;
     private long mEpoch;
     private int counts = 1;
     private float[] acc;
@@ -45,6 +58,10 @@ class SensorRunnable implements Runnable {
     private int listenHint;
     private boolean upDateData = false;
     private boolean sendData = false;
+    private SensorManager sM;
+    private Sensor sensor;
+    private SensorEventListener mListener;
+    private LinkedBlockingQueue dQ;
 
     private final BroadcastReceiver txListener = new BroadcastReceiver() {
         @Override
@@ -52,6 +69,7 @@ class SensorRunnable implements Runnable {
             switch (intent.getAction()) {
                 case SensorActivity.TOGGLE_DISPLAY:
                     upDateData = !upDateData;
+                    if (sHandler == null) sHandler = nodeController.getsHandler();
                     break;
                 case SensorActivity.TOGGLE_SEND: // USB DISCONNECTED
                     sendData = !sendData;
@@ -63,57 +81,33 @@ class SensorRunnable implements Runnable {
     SensorRunnable(mySensor mSensor, SensorManager sMgr, LinkedBlockingQueue dataQ ) {
         fSensor = mSensor;
         sensorType = mSensor.getType();
-        sM = sMgr;
-        sensor = sM.getDefaultSensor(sensorType);
         mEpoch = nodeController.getNodeCtrl().getEpoch();
         tickLength = nodeController.getNodeCtrl().getTick();
         halfTick = nodeController.getNodeCtrl().getHalfTick();
-        listenHint = nodeController.getNodeCtrl().getHint();
-        sHandler = nodeController.getsHandler();
-        dataQW = new udpQWriter(dataQ);
+//        dataQW = new udpQWriter(dataQ);
+        this.dQ = dataQ;
         setFilters(txListener,nodeController.getNodeCtrl());
-
-        mListener = new SensorEventListener() {        //TODO: Look at where declared wrt usbRunnable. In constructor vs as field
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                int nValues = event.values.length;
-                if (acc == null) {
-                    acc = new float[nValues];
-                }
-                long ts = (event.timestamp-event.timestamp%10000000)/1000000;       //Get event Timestamp and convert to milliseconds
-
-                if (ts >= mEpoch){
-                    if ( ts < mEpoch + tickLength) {
-                        for (int i = 0; i < nValues; i++) {
-                            acc[i] += event.values[i];
-                            }
-                        counts += 1;
-                    } else {
-                        long binTs = mEpoch + halfTick;
-                        publishEpoch(acc, counts, binTs);                           //Send total values, counts, timestamp (for middle of bin) to publisher
-                        for (int i = 0; i < nValues; i++) {                         //Reinitialise accumulator registers and reset counter
-                            acc[i] = event.values[i];
-                        }
-                        counts = 1;
-                        mEpoch = mEpoch + tickLength;
-                    }
-                }
-            }
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-                // do nothing
-            }
-        };
+        listenHint = nodeController.getNodeCtrl().getHint();
+        sM = sMgr;
+        sensor = sM.getDefaultSensor(sensorType);
+        mListener = new sListener();
     }
 
     @Override
-    public void run() {                                                                 //TODO Need thread stop condition
-        if (mLogging) {
+    public void run(){                                                                 //TODO Need thread stop condition
+        if (mLogging){
             String logString = fSensor.getName()+" Thread Started";
             Log.d(TAG, logString);
         }
-        new Thread(dataQW).start();                                                         //TODO: Need thread stop condition             refer to publishEpoch -> one of these is not needed!
         sM.registerListener(mListener, sensor, listenHint);                             // listenHint set in nodeControlle. default = 50ms
+//        Log.d(TAG, Boolean.toString(startThread.get()));
+        while(startThread.get()){
+/*            if (!dataQW.isRunning()){
+                    dataQW.setRunning(true);
+                    sensorDataTxThread = new Thread(dataQW);
+                    sensorDataTxThread.start();
+            }*/
+        }
     }
 
     private void publishEpoch(float[] sData, int counts, final long ts) {
@@ -127,7 +121,7 @@ class SensorRunnable implements Runnable {
         }
         if (sendData){
             try {
-                dataQW.queue.put(udpFormat(avData,ts));
+                dQ.put(udpFormat(avData,ts));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -137,7 +131,9 @@ class SensorRunnable implements Runnable {
     private HashMap<String,String> displayFormat(float sData[], long timestamp){
         int nValues = sData.length;
         HashMap<String,String> dispPkt = new HashMap<>();
-        fSensor.getDim();
+/*        for (String item: fSensor.getDim()){
+            Log.d(TAG, "Dim" + item);
+        }*/
         for (int i = 0; i < nValues; i++){
             dispPkt.put(fSensor.getDim()[i],String.format ("%.3f", sData[i]));
         }
@@ -158,41 +154,75 @@ class SensorRunnable implements Runnable {
         return udpPkt;
     }
 
-    public class udpQWriter implements Runnable {
-        private LinkedBlockingQueue queue;
-
-        public udpQWriter(LinkedBlockingQueue q) {
-            this.queue = q;
-        }
-
+/*    public class udpQWriter implements Runnable {
+        private AtomicBoolean running = new AtomicBoolean(false);
         public boolean isRunning(){
-            return true;
+            return running.get();
         }
-
-        @Override
-        public void run() {                                                             //TODO Need thread stop condition
+        public void setRunning(boolean running) {
+            this.running.set(running);
+        }
+        public void stop(){
+            running.set(false);
+        }
+        private LinkedBlockingQueue queue;
+        udpQWriter(LinkedBlockingQueue q) {
+            queue = q;
             if (mLogging) {
-                String logString = " udpQWriter started";
+                String logString = fSensor.getName()+" udpQWriter created";
                 Log.d(TAG, logString);
             }
         }
-    }
+
+        @Override
+        public void run() {
+            if (mLogging) {
+                String logString = fSensor.getName()+" udpQWriter started";
+                Log.d(TAG, logString);
+            }
+            while (running.get()) {
+            }
+            running.set(false);
+        }
+    }*/
+
     private void setFilters(BroadcastReceiver mReciever, Context context) {                     //USB Filter configuration and reciever registration
         IntentFilter filter = new IntentFilter();
         filter.addAction(SensorActivity.TOGGLE_DISPLAY);
         filter.addAction(SensorActivity.TOGGLE_SEND);
         context.registerReceiver(mReciever, filter);
     }
+
+    private class sListener implements SensorEventListener {
+
+        public void onSensorChanged(SensorEvent event) {
+            int nValues = event.values.length;
+            if (acc == null) {
+                acc = new float[nValues];
+            }
+            long ts = (event.timestamp-event.timestamp%10000000)/1000000;       //Get event Timestamp and convert to milliseconds
+
+            if (ts >= mEpoch){
+                if ( ts < mEpoch + tickLength) {
+                    for (int i = 0; i < nValues; i++) {
+                        acc[i] += event.values[i];
+                    }
+                    counts += 1;
+                } else {
+                    long binTs = mEpoch + halfTick;
+                    publishEpoch(acc, counts, binTs);                           //Send total values, counts, timestamp (for middle of bin) to publisher
+                    for (int i = 0; i < nValues; i++) {                         //Reinitialise accumulator registers and reset counter
+                        acc[i] = event.values[i];
+                    }
+                    counts = 1;
+                    mEpoch = mEpoch + tickLength;
+                }
+            }
+        }
+
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            // do nothing
+        }
+    }
 }
-
-
-//    public void cleanThread(){
-//        //Unregister the listener
-//        if(mSensorManager != null) {
-//            mSensorManager.unregisterListener(mListener);
-//        }
-//
-//        if(mHandlerThread.isAlive())
-//            mHandlerThread.quitSafely();
-//    }
 

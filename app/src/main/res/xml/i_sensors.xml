@@ -13,7 +13,7 @@
     <sensor
         name = "Gravity"
         type = "9"
-        abbr = "G">
+        abbr = "Grav">
         <dimensions
             x = "x"
             y = "y"
@@ -23,7 +23,7 @@
     <sensor
         name = "Gyroscope"
         type = "4"
-        abbr = "Gyro">
+        abbr = "G">
         <dimensions
             x = "x"
             y = "y"
