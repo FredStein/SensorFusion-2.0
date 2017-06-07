@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     //tag for logging
     private static final String TAG = MainActivity.class.getSimpleName()+"SF2Debug";
     //flag for logging
-    private boolean mLogging = true;
+    private boolean mLogging = false;
 
     private Menu appBarMenu;
     private TextView present;

@@ -19,7 +19,7 @@ class XMLAggregator implements Runnable {
     //tag for logging
     private static final String TAG = XMLAggregator.class.getSimpleName()+"SF2Debug";
     //flag for logging
-    private boolean mLogging = true;
+    private boolean mLogging = false;
 
     private AtomicBoolean startThread = new AtomicBoolean(false);
     public boolean isRunning(){
@@ -74,7 +74,6 @@ class XMLAggregator implements Runnable {
                     sDataReaderThread.start();
                 }
             }
-//            Log.d(TAG,Integer.toString(msgStack.size()));
             if (!udpQWriter.isRunning()){
                 synchronized (msgStack){
                     if(msgStack.size() > 0){
@@ -105,7 +104,7 @@ class XMLAggregator implements Runnable {
         }
 
         @Override
-        public void run() {                                             //Overidden
+        public void run() {
             if (mLogging){
                 String logString = "dataQReader started";
                 Log.d(TAG, logString);
@@ -121,17 +120,14 @@ class XMLAggregator implements Runnable {
                     }
                     String ts = msg.get("Timestamp");
                     synchronized (msgStack){
- //                       Log.d(TAG, Integer.toString(msgStack.size()));
                         if (!msgStack.containsKey(ts)) {
                             MessageXML local = new MessageXML();
                             local.setTimeStamp(ts);
                             local.setVal(msg);
                             msgStack.put(ts, local);
-//                            Log.d(TAG, Integer.toString(msgStack.size()));
                         }else {
                             msgStack.get(ts).setVal(msg);
                         }
-//                        Log.d(TAG, Integer.toString(msgStack.size()));
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -177,7 +173,7 @@ class XMLAggregator implements Runnable {
             }
         }
         @Override
-        public void run() {                                             //Not Overriden
+        public void run() {
             if (mLogging) {
                 String logString = " udpQWrite started";
                 Log.d(TAG, logString);
@@ -186,8 +182,6 @@ class XMLAggregator implements Runnable {
                 synchronized (msgStack){
                     for(Iterator<Map.Entry<String, MessageXML>> it = msgStack.entrySet().iterator(); it.hasNext(); ) {
                         Map.Entry<String, MessageXML> entry = it.next();
-//                        Log.d(TAG, entry.getValue().getXmlString() );
-//                        Log.d(TAG, Boolean.toString(entry.getValue().isComplete()));
                         if(entry.getValue().isComplete()) {
                             MessageXML msg = entry.getValue();
                             try {

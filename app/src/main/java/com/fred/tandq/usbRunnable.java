@@ -29,7 +29,7 @@ class usbRunnable implements Runnable {
     //tag for logging
     private static final String TAG = usbRunnable.class.getSimpleName()+"SF2Debug";
     //flag for logging
-    private static boolean mLogging = true ;
+    private static boolean mLogging = false ;
 
     private AtomicBoolean startThread = new AtomicBoolean(false);
     public boolean isRunning(){
@@ -49,7 +49,6 @@ class usbRunnable implements Runnable {
     private mySensor fSensor;
 //    private udpQWriter dataQW;
     private LinkedBlockingQueue dQ;
-    private Thread sensorDataTxThread;
     private long mEpoch;
     private int counts = 1;
     private float acc;
@@ -113,7 +112,6 @@ class usbRunnable implements Runnable {
         float avData = sData / counts;
         if (sHandler != null) {
             if (upDateData){
-                Log.d(TAG, "Ping Ping");
                 sHandler.obtainMessage(sensorType, displayFormat(avData, ts)).sendToTarget();
             }
         }
@@ -193,7 +191,6 @@ class usbRunnable implements Runnable {
     public class usbListener implements UsbSerialInterface.UsbReadCallback {
 
         public void onReceivedData(byte[] arg0) {
-//            Log.d(TAG,"USB data received");
             try {
                 String data = new String(arg0, "UTF-8");
                 if (!data.contains("%")){

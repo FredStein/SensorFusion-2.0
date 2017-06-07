@@ -22,7 +22,7 @@ public class nodeController extends Application {
     //tag for logging
     private static final String TAG = nodeController.class.getSimpleName()+"SF2Debug";
     //flag for logging
-    private boolean mLogging = true;
+    private boolean mLogging = false;
 
     private static nodeController nodeCtrl;
     public static nodeController getNodeCtrl()
@@ -59,15 +59,6 @@ public class nodeController extends Application {
     public long getEpoch(){
         return epoch;
     }
-
-//    private static boolean USB = false;
-//    public boolean getUSB() {
-//        return USB;
-//    }
-//    public void setUSB(boolean USBstatus) {
-//        USB = USBstatus;
-//    }
-
     private static String appBarTitle = "";
     public void setAppBarTitle (String title){
         appBarTitle = title;
@@ -86,7 +77,7 @@ public class nodeController extends Application {
     public long getHalfTick(){
         return tickLength / 2;
     }
-    private static int listenHint;                               //Preference accepts value in ms which is converted to hint native unit (microseconds)
+    private static int listenHint;                               //Preference accepts value in ms which is converted to 'Hint' native unit (microseconds)
     public int getHint(){
         return listenHint;
     }
@@ -136,7 +127,6 @@ public class nodeController extends Application {
     public static void setSendUDP(boolean sUDP) {
         sendUDP = sUDP;
     }
-
     private static usbRunnable.usbListener mCallback;
     public static usbRunnable.usbListener getusbCallback() {
         return mCallback;
@@ -166,16 +156,9 @@ public class nodeController extends Application {
         }
         setAppBarTitle(getString(R.string.No_USB));
         SensorManager sm = (SensorManager) getSystemService(SENSOR_SERVICE);
-//        intSensorStatus(sm, rp);
-
-//        startService(new Intent (this,usbService.class));            // Start UsbService(if it was not started before) and Bind it
         initNode();
         setInternalSensors(sm);
         startService(new Intent(this, SensorService.class));
-/*        if (USB){
-            setAppBarTitle(getString(R.string.USB));
-            setExtSensors();
-        }*/
     }
 
     public void initNode() {
@@ -188,9 +171,7 @@ public class nodeController extends Application {
         listenHint = Integer.parseInt(sharedPref.getString("sampleFrequency",getString(R.string.defaultSample_Freq)));
         listenHint = listenHint * 1000;         //Convert to microseconds (See above)
         XMLC = new XMLAggregator(sDataQ);
-
         initialised = true;
-        Log.d(TAG, "Node initialised.  Initialised is: " + Boolean.toString(initialised));
     }
 
     private void setInternalSensors(SensorManager sm){                                       //TODO: Generalise for internal / external sensor discovery / setup
@@ -209,9 +190,6 @@ public class nodeController extends Application {
                             String name = sN.getAttributeValue(null, "name");
                             Integer type = Integer.parseInt(sN.getAttributeValue(null, "type"));
                             String abbr = sN.getAttributeValue(null, "abbr");
-//                            Log.d(TAG, name);
-//                            Log.d(TAG, String.valueOf(type));
-//                            Log.d(TAG, abbr);
                             temp = type;
                             if (sm.getDefaultSensor(type) != null){
                                 activeSensors.put(type,new mySensor(name, type, abbr));
@@ -251,8 +229,7 @@ public class nodeController extends Application {
     }
 
     public void setExtSensors(){
-        //External Sensor configured here
-        //This runs when USB == true
+        //External Sensor configured here. At the moment *There can be only one*
         XmlResourceParser sN = getResources().getXml(R.xml.e_sensors);
         Integer temp = 0;
         String[] dims;
@@ -266,9 +243,6 @@ public class nodeController extends Application {
                             String name = sN.getAttributeValue(null, "name");
                             Integer type = Integer.parseInt(sN.getAttributeValue(null, "type"));
                             String abbr = sN.getAttributeValue(null, "abbr");
-//                            Log.d(TAG, name);
-//                            Log.d(TAG, String.valueOf(type));
-//                            Log.d(TAG, abbr);
                             temp = type;
                             activeSensors.put(type,new mySensor(name, type, abbr));
                             usbRunnable ur = new usbRunnable(activeSensors.get(type),sDataQ);
@@ -279,11 +253,9 @@ public class nodeController extends Application {
                             dims = new String[nAtts];
                             for (int k = 0; k < nAtts; k++){
                                 dims[k] = sN.getAttributeValue(k);
-//                                Log.d(TAG, dims[k]);
                             }
 
                             activeSensors.get(temp).setDim(dims);
-
                         }
                         break;
                     case XmlResourceParser.END_TAG:
@@ -298,42 +270,4 @@ public class nodeController extends Application {
         }
     }
 }
-
-/*
-    public void intSensorStatus(SensorManager sm, XmlResourceParser maX){
-        sensorStatus[0] = getString(R.string.sensors_present);
-        sensorStatus[1] = getString(R.string.sensors_absent);
-
-        try{
-            while ( maX.getEventType() != XmlResourceParser.END_DOCUMENT) {
-                switch(maX.getEventType()){
-                    case XmlResourceParser.START_DOCUMENT:
-                        break;
-                    case XmlResourceParser.START_TAG:
-                        if (maX.getName().equals("sensor")) {
-                            String name = maX.getAttributeValue(null, "name");
-                            Integer type = Integer.parseInt(maX.getAttributeValue(null, "type"));
-                            if (sm.getDefaultSensor(type) != null){
-                                sensorStatus[0] = sensorStatus[0] + name +"\n";
-                                if (intSensSuiteStatus != 1){
-                                    intSensSuiteStatus = 2;
-                                }
-                            }else{
-                                sensorStatus[1] = sensorStatus[1] + name +"\n";
-                                intSensSuiteStatus = 1;
-                            }
-                        }
-                        break;
-                    case XmlResourceParser.END_TAG:
-                        break;
-                }
-                maX.next();
-            }
-        }catch (Exception e){
-            Log.e(TAG, getStackTraceString(e));
-        }finally{
-            maX.close();
-        }
-    }
-*/
 

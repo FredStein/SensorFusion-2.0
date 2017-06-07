@@ -33,7 +33,7 @@ class udpSender implements Runnable {
     public void setRunning(boolean runState){
         this.startThread.set(runState);
     }
-    private final SortedMap<String, MessageXML> udpStack = new TreeMap<>();             //TODO: Check if this effective in ordering timestamps
+    private final SortedMap<String, MessageXML> udpStack = new TreeMap<>();             //TODO: Check if this is effective in ordering timestamps
     private LinkedBlockingQueue udpRxQ;
     private InetAddress IPout;
     private DatagramSocket socket;

@@ -3,9 +3,9 @@ package com.fred.tandq;
  * Created by Fred Stein on 14/04/2017.
  * Creates a thread to read a sensorType of TYPE_? and return binned data
  * This iteration averages data received during the bin length (Default: 500 ms)
- * SensorRunnable explicitly sets the sensor listener hint (from nodeControlle) rather than using an android constant (Default: 20000 microseconds-unit of hint)
+ * SensorRunnable explicitly sets the sensor listener hint (from nodeController) rather than using an android constant (Default: 20000 microseconds-unit of hint)
  * bin and listenHint are available for future use as parameters to the SensorRunnable constructor
- * Display and udp data queue handles are obtained directly from nodeControlle
+ * Display and udp data queue handles are obtained directly from nodeController
  * :param  mySensor sensor:     Configuration data for this sensor
    :param  Context mContext:    Context of the SensorManager
  */
@@ -29,7 +29,7 @@ class SensorRunnable implements Runnable {
     //tag for logging
     private static final String TAG = SensorRunnable.class.getSimpleName()+"SF2Debug";
     //flag for logging
-    private static final boolean mLogging = true;
+    private static final boolean mLogging = false;
 
     private AtomicBoolean startThread = new AtomicBoolean(false);
     public boolean isRunning(){
@@ -71,7 +71,7 @@ class SensorRunnable implements Runnable {
                     upDateData = !upDateData;
                     if (sHandler == null) sHandler = nodeController.getsHandler();
                     break;
-                case SensorActivity.TOGGLE_SEND: // USB DISCONNECTED
+                case SensorActivity.TOGGLE_SEND:
                     sendData = !sendData;
                     break;
             }
@@ -99,8 +99,7 @@ class SensorRunnable implements Runnable {
             String logString = fSensor.getName()+" Thread Started";
             Log.d(TAG, logString);
         }
-        sM.registerListener(mListener, sensor, listenHint);                             // listenHint set in nodeControlle. default = 50ms
-//        Log.d(TAG, Boolean.toString(startThread.get()));
+        sM.registerListener(mListener, sensor, listenHint);                             // listenHint set in nodeController. default = 50ms
         while(startThread.get()){
 /*            if (!dataQW.isRunning()){
                     dataQW.setRunning(true);
@@ -131,9 +130,6 @@ class SensorRunnable implements Runnable {
     private HashMap<String,String> displayFormat(float sData[], long timestamp){
         int nValues = sData.length;
         HashMap<String,String> dispPkt = new HashMap<>();
-/*        for (String item: fSensor.getDim()){
-            Log.d(TAG, "Dim" + item);
-        }*/
         for (int i = 0; i < nValues; i++){
             dispPkt.put(fSensor.getDim()[i],String.format ("%.3f", sData[i]));
         }

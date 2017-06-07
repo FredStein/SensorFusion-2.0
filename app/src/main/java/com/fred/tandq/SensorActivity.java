@@ -32,7 +32,7 @@ public class SensorActivity extends AppCompatActivity {
     //tag for logging
     private static final String TAG = SensorActivity.class.getSimpleName()+"SF2Debug";
     //flag for logging
-    private static boolean mLogging = true;
+    private static boolean mLogging = false;
 
     public static final String TOGGLE_SEND = "toggle_display";
     public static final String TOGGLE_DISPLAY = "toggle_send";
@@ -41,8 +41,6 @@ public class SensorActivity extends AppCompatActivity {
     private Menu appBarMenu;
     private TextView tDisp;
 
-    /*  This activity only responds to connected / disconnected / not supported signals
-    */
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -105,11 +103,11 @@ public class SensorActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.a_bar_menu_sa, menu);                  // Inflate the menu; this adds items to the action bar
+        getMenuInflater().inflate(R.menu.a_bar_menu_sa, menu);                  // Inflate the menu
         this.appBarMenu = menu;
         menu.getItem(0).setTitle(nodeController.getNodeCtrl().getAppBarTitle());;
         return true;
-    }                                                                                               //TODO Sort out ActionBar contents. Back arrow + USB indicator
+    }
 
     @Override
     public void onStart() {
@@ -185,11 +183,8 @@ public class SensorActivity extends AppCompatActivity {
             //:Param msg.what   Type of sensor
             HashMap<String, String> sData = (HashMap<String, String>) msg.obj;
             int sensor = msg.what;
-            Log.d(TAG, nodeController.getNodeCtrl().getSensors().get(sensor).getName());
             for (String key : sData.keySet()) {
                 if (!key.equals("Timestamp")){
-                        Log.d(TAG, key);
-                        Log.d(TAG, sData.get(key));
                     TextView tv = nodeController.getNodeCtrl().getSensors().get(sensor).getTextView(key);
                     if (tv != null){
                         tv.setText(sData.get(key));
@@ -200,7 +195,7 @@ public class SensorActivity extends AppCompatActivity {
         }
     }
 
-    private void setFilters(BroadcastReceiver usbReciever, Context context) {                     //USB Filter configuration and reciever registration
+    private void setFilters(BroadcastReceiver usbReciever, Context context) {                     //USB Filter configuration and receiver registration
         IntentFilter filter = new IntentFilter();
         filter.addAction(SensorService.ACTION_USB_READY);
         filter.addAction(SensorService.ACTION_USB_DISCONNECTED);
@@ -210,30 +205,9 @@ public class SensorActivity extends AppCompatActivity {
         context.registerReceiver(usbReciever, filter);
     }
 
-/*    private void startService(Class<?> service, ServiceConnection serviceConnection, Bundle extras) {
-        if (!com.fred.tandq.usbService.SERVICE_CONNECTED) {
-            Intent startService = new Intent(this, service);
-            if (extras != null && !extras.isEmpty()) {
-                Set<String> keys = extras.keySet();
-                for (String key : keys) {
-                    String extra = extras.getString(key);
-                    startService.putExtra(key, extra);
-                }
-            }
-            startService(startService);
-        }
-        Intent bindingIntent = new Intent(this, service);
-        bindService(bindingIntent, serviceConnection, Context.BIND_AUTO_CREATE);
-    }*/
-
     public void setTVC(mySensor sensor){
         for (String tvID : sensor.getFieldIdx().keySet()) {
             int tvi = getResources().getIdentifier(tvID, "id", getPackageName());
-            if (tvi == 0){
-                Log.d(TAG, "Sensor Field index value not recognised");
-            }
-//            Log.d(TAG, tvID);
-//            Log.d(TAG, Integer.toString(tvi));
             sensor.setTextField(tvID, (TextView) findViewById(tvi));
         }
     }
