@@ -21,7 +21,7 @@ class udpSender implements Runnable {
     //tag for logging
     private static final String TAG = udpSender.class.getSimpleName()+"SF2Debug";
     //flag for logging
-    private boolean mLogging = false;
+    private boolean mLogging = true;
 
     private AtomicBoolean startThread = new AtomicBoolean(false);
     public boolean stopMe(){
@@ -45,7 +45,7 @@ class udpSender implements Runnable {
     private Thread udpTxThread;
 
     udpSender(LinkedBlockingQueue udpQ, String IP, int Port){
-        if (mLogging) {
+        if (false) {
             String logString = " udpSender created";
             Log.d(TAG, logString);
         }
@@ -70,7 +70,7 @@ class udpSender implements Runnable {
 
     @Override
     public void run() {
-        if (mLogging) {
+        if (false) {
             String logString = " udpSender started";
             Log.d(TAG, logString);
         }
@@ -105,14 +105,14 @@ class udpSender implements Runnable {
         }
         udpQReader(LinkedBlockingQueue q) {
             this.queue = q;
-            if (mLogging) {
+            if (false) {
                 String logString = " udpQReader created";
                 Log.d(TAG, logString);
             }
         }
         @Override
         public void run() {
-            if (mLogging) {
+            if (false) {
                 String logString = " udpQReader started";
                 Log.d(TAG, logString);
             }
@@ -150,7 +150,7 @@ class udpSender implements Runnable {
         }
         @Override
         public void run(){
-            if (mLogging) {
+            if (false) {
                 String logString = " udpTx started";
                 Log.d(TAG, logString);
             }
@@ -163,7 +163,7 @@ class udpSender implements Runnable {
                     try {
                         socket.send(p);
                         if (mLogging) {
-                            Log.d(TAG, "XML Out : " + msgStr);
+                            Log.d(TAG, "Timestamp : " + msgStr.substring(msgStr.length()-23,msgStr.length()-10));
                         }
                     }catch (java.io.IOException e) {
                         e.printStackTrace();

@@ -10,13 +10,15 @@ import static android.hardware.Sensor.TYPE_GRAVITY;
 import static android.hardware.Sensor.TYPE_GYROSCOPE;
 import static android.hardware.Sensor.TYPE_LINEAR_ACCELERATION;
 import static android.hardware.Sensor.TYPE_ROTATION_VECTOR;
+import static android.os.SystemClock.elapsedRealtime;
+import static java.lang.System.currentTimeMillis;
 
 
 /**
  * Created by Fred Stein on 14/04/2017.
  */
 
-class MessageXML {
+public class MessageXML {
     //tag for logging
     private static final String TAG = MessageXML.class.getSimpleName()+"SF2Debug";
     //flag for logging
@@ -26,14 +28,13 @@ class MessageXML {
     private String nodeID;
     private HashMap<Integer,mySensor> activeSensors;
     private Set <Integer> sTypes;
-    private static HashMap<String, String> Accelerometer = new HashMap<>();
-    private static HashMap<String, String> Gravity = new HashMap<>();
-    private static HashMap<String, String> Gyroscope = new HashMap<>();
-    private static HashMap<String, String> LinearAcceleration = new HashMap<>();
-    private static HashMap<String, String> RotationVector = new HashMap<>();
-    private static HashMap<String, String> USB = new HashMap<>();
-    private String TimeStamp;                                                                       //TODO: Outward ts should be clock time
-    //Presently elapsedRealtime
+    private HashMap<String, String> Accelerometer = new HashMap<>();
+    private HashMap<String, String> Gravity = new HashMap<>();
+    private HashMap<String, String> Gyroscope = new HashMap<>();
+    private HashMap<String, String> LinearAcceleration = new HashMap<>();
+    private HashMap<String, String> RotationVector = new HashMap<>();
+    private HashMap<String, String> USB = new HashMap<>();
+    private String TimeStamp;                                                                      //Converted to clockTime on XML Build
     public String getTimeStamp() {
         return TimeStamp;
     }
@@ -48,8 +49,8 @@ class MessageXML {
     }
 
     public void setVal(HashMap<String, String> sMsg) {
-        for (String item: sMsg.keySet()){
-            if (mLogging) {
+        if (mLogging) {
+            for (String item: sMsg.keySet()){
                 Log.d(TAG, item + "," + sMsg.get(item));
             }
         }
@@ -97,7 +98,6 @@ class MessageXML {
         Boolean complete = true;
         HashMap<Integer, Boolean> status = new HashMap<>();
         for(Integer type : sTypes) {
-//        for (int item : activeSensors.keySet()) {
             switch (type) {
                 case TYPE_ACCELEROMETER:
                     status.put(type, !Accelerometer.keySet().isEmpty());
@@ -178,10 +178,16 @@ class MessageXML {
         for (int item : element.keySet()){
             xml = xml + element.get(item);
         }
-        xml = xml + "<Timestamp Time= \"" + TimeStamp + "\"/>";
+        xml = xml + "<Timestamp Time= \"" + clockTime(TimeStamp) + "\"/>";
         //Close for well formed xml
         return xml + "</Node>";
     }
+
+    private String clockTime(String ts){
+        Long dt = currentTimeMillis() - elapsedRealtime();                                          //currentTimeMillis IS NOT monotonic
+        String cTime = String.valueOf(Long.parseLong(ts)+dt);
+        return cTime;                                                                               //TODO: Consider adding dt to output to assess system clock drift
+    }                                                                                               //      abd monitor jumps in currentTimeMillis
 }
 /*
 <Sensor

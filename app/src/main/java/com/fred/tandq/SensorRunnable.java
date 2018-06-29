@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static android.os.SystemClock.elapsedRealtime;
+
 
 class SensorRunnable implements Runnable {
     //tag for logging
@@ -52,7 +54,8 @@ class SensorRunnable implements Runnable {
 //    private Thread sensorDataTxThread;
     private long mEpoch;
     private int counts = 1;
-    private float[] acc;
+    private float[] vAcc;
+    private long dtAcc = 0;
     private long tickLength;
     private long halfTick;
     private int listenHint;
@@ -109,18 +112,20 @@ class SensorRunnable implements Runnable {
         }
     }
 
-    private void publishEpoch(float[] sData, int counts, final long ts) {
+    private void publishEpoch(float[] sData, int counts, final long dT, final long ts) {
         int nValues = sData.length;
         final float[] avData = new float[nValues];
         for (int i = 0; i < nValues; i++){
             avData[i] = sData[i] / counts;
         }
+        final long dTm = dT/ counts;
+
         if (sHandler != null){
             if(upDateData) sHandler.obtainMessage(sensorType,displayFormat(avData, ts)).sendToTarget();
         }
         if (sendData){
             try {
-                dQ.put(udpFormat(avData,ts));
+                dQ.put(udpFormat(avData,ts, dTm));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -138,7 +143,7 @@ class SensorRunnable implements Runnable {
         return dispPkt;
     }
 
-    private HashMap<String, String> udpFormat(float sData[], long timestamp){
+    private HashMap<String, String> udpFormat(float sData[], long timestamp, long dTm){
         int nValues = sData.length;
         HashMap<String,String> udpPkt = new HashMap<>();
         fSensor.getDim();
@@ -146,6 +151,7 @@ class SensorRunnable implements Runnable {
             udpPkt.put(fSensor.getDim()[i],String.format ("%.3f", sData[i]));
         }
         udpPkt.put("Timestamp", Long.toString(timestamp));
+        udpPkt.put("dT",Long.toString(dTm));
         udpPkt.put("Sensor",fSensor.getName());
         return udpPkt;
     }
@@ -192,24 +198,27 @@ class SensorRunnable implements Runnable {
     private class sListener implements SensorEventListener {
 
         public void onSensorChanged(SensorEvent event) {
+            long tRx = elapsedRealtime();
             int nValues = event.values.length;
-            if (acc == null) {
-                acc = new float[nValues];
+            if (vAcc == null) {
+                vAcc = new float[nValues];
             }
             long ts = (event.timestamp-event.timestamp%10000000)/1000000;       //Get event Timestamp and convert to milliseconds
 
             if (ts >= mEpoch){
                 if ( ts < mEpoch + tickLength) {
                     for (int i = 0; i < nValues; i++) {
-                        acc[i] += event.values[i];
+                        vAcc[i] += event.values[i];
                     }
+                    dtAcc = dtAcc + (tRx - ts);
                     counts += 1;
                 } else {
                     long binTs = mEpoch + halfTick;
-                    publishEpoch(acc, counts, binTs);                           //Send total values, counts, timestamp (for middle of bin) to publisher
+                    publishEpoch(vAcc, counts, dtAcc, binTs);                           //Send total values, counts, dT total, timestamp (for middle of bin) to publisher
                     for (int i = 0; i < nValues; i++) {                         //Reinitialise accumulator registers and reset counter
-                        acc[i] = event.values[i];
+                        vAcc[i] = event.values[i];
                     }
+                    dtAcc = (tRx - ts);
                     counts = 1;
                     mEpoch = mEpoch + tickLength;
                 }
