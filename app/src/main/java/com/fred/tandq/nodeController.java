@@ -177,12 +177,11 @@ public class nodeController extends Application {
     private void setInternalSensors(SensorManager sm){                                       //TODO: Generalise for internal / external sensor discovery / setup
         sensorStatus[0] = getString(R.string.sensors_present);
         sensorStatus[1] = getString(R.string.sensors_absent);
-        XmlResourceParser sN = getResources().getXml(R.xml.i_sensors);
         Integer temp = 0;
         String[] dims;
-        try{
-            while ( sN.getEventType() != XmlResourceParser.END_DOCUMENT) {
-                switch(sN.getEventType()){
+        try (XmlResourceParser sN = getResources().getXml(R.xml.i_sensors)) {
+            while (sN.getEventType() != XmlResourceParser.END_DOCUMENT) {
+                switch (sN.getEventType()) {
                     case XmlResourceParser.START_DOCUMENT:
                         break;
                     case XmlResourceParser.START_TAG:
@@ -191,27 +190,27 @@ public class nodeController extends Application {
                             Integer type = Integer.parseInt(sN.getAttributeValue(null, "type"));
                             String abbr = sN.getAttributeValue(null, "abbr");
                             temp = type;
-                            if (sm.getDefaultSensor(type) != null){
-                                activeSensors.put(type,new mySensor(name, type, abbr));
-                                SensorRunnable sr = new SensorRunnable(activeSensors.get(type),sm,sDataQ);
+                            if (sm.getDefaultSensor(type) != null) {
+                                activeSensors.put(type, new mySensor(name, type, abbr));
+                                SensorRunnable sr = new SensorRunnable(activeSensors.get(type), sm, sDataQ);
                                 sr.setRunning(true);
                                 SensorThreads.put(type, new Thread(sr));
-                                sensorStatus[0] = sensorStatus[0] + name +"\n";
-                                if (intSensSuiteStatus != 1){
+                                sensorStatus[0] = sensorStatus[0] + name + "\n";
+                                if (intSensSuiteStatus != 1) {
                                     intSensSuiteStatus = 2;
                                 }
-                            }else{
-                                sensorStatus[1] = sensorStatus[1] + name +"\n";
+                            } else {
+                                sensorStatus[1] = sensorStatus[1] + name + "\n";
                                 intSensSuiteStatus = 1;
                             }
-                        }else if (sN.getName().equals("dimensions")){
+                        } else if (sN.getName().equals("dimensions")) {
                             int nAtts = sN.getAttributeCount();
                             dims = new String[nAtts];
-                            for (int k = 0; k < nAtts; k++){
+                            for (int k = 0; k < nAtts; k++) {
                                 dims[k] = sN.getAttributeValue(k);
 //                                Log.d(TAG, dims[k]);
                             }
-                            if (sm.getDefaultSensor(temp) != null){
+                            if (sm.getDefaultSensor(temp) != null) {
                                 activeSensors.get(temp).setDim(dims);
                             }
                         }
@@ -221,21 +220,18 @@ public class nodeController extends Application {
                 }
                 sN.next();
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.e(TAG, getStackTraceString(e));
-        }finally{
-            sN.close();
         }
     }
 
     public void setExtSensors(){
         //External Sensor configured here. At the moment *There can be only one*
-        XmlResourceParser sN = getResources().getXml(R.xml.e_sensors);
         Integer temp = 0;
         String[] dims;
-        try{
-            while ( sN.getEventType() != XmlResourceParser.END_DOCUMENT) {
-                switch(sN.getEventType()){
+        try (XmlResourceParser sN = getResources().getXml(R.xml.e_sensors)) {
+            while (sN.getEventType() != XmlResourceParser.END_DOCUMENT) {
+                switch (sN.getEventType()) {
                     case XmlResourceParser.START_DOCUMENT:
                         break;
                     case XmlResourceParser.START_TAG:
@@ -244,17 +240,16 @@ public class nodeController extends Application {
                             Integer type = Integer.parseInt(sN.getAttributeValue(null, "type"));
                             String abbr = sN.getAttributeValue(null, "abbr");
                             temp = type;
-                            activeSensors.put(type,new mySensor(name, type, abbr));
-                            usbRunnable ur = new usbRunnable(activeSensors.get(type),sDataQ);
+                            activeSensors.put(type, new mySensor(name, type, abbr));
+                            usbRunnable ur = new usbRunnable(activeSensors.get(type), sDataQ);
                             ur.setRunning(true);
                             SensorThreads.put(type, new Thread(ur));
-                        }else if (sN.getName().equals("dimensions")){
+                        } else if (sN.getName().equals("dimensions")) {
                             int nAtts = sN.getAttributeCount();
                             dims = new String[nAtts];
-                            for (int k = 0; k < nAtts; k++){
+                            for (int k = 0; k < nAtts; k++) {
                                 dims[k] = sN.getAttributeValue(k);
                             }
-
                             activeSensors.get(temp).setDim(dims);
                         }
                         break;
@@ -263,10 +258,8 @@ public class nodeController extends Application {
                 }
                 sN.next();
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.e(TAG, getStackTraceString(e));
-        }finally{
-            sN.close();
         }
     }
 }

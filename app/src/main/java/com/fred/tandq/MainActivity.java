@@ -78,8 +78,8 @@ public class MainActivity extends AppCompatActivity {
         getFragmentManager().beginTransaction()
                 .replace(R.id.SettingsFrag, new SettingsFragment()).commit();
 
-        present = (TextView) findViewById(R.id.sp);
-        absent = (TextView) findViewById(R.id.sa);
+        present = findViewById(R.id.sp);
+        absent = findViewById(R.id.sa);
 
         String[] sensorStatus = getSensorStatus();
         present.setText(sensorStatus[0]);
@@ -103,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
             }
             setStatusDisplayed(true);
         }
-
     }
 
     @Override

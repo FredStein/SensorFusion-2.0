@@ -127,58 +127,58 @@ public class MessageXML {
 
     public String getXmlString(){
         HashMap<Integer,String> element = new HashMap<>();
-        String xml = "<\u003Fxml version=\"1.0\" encoding=\"utf-8\"\u003F>";
-        xml = xml + "<Node Name=\"" + nodeID +"\">";
+        StringBuilder xml = new StringBuilder("<\u003Fxml version=\"1.0\" encoding=\"utf-8\"\u003F>");
+        xml.append("<Node Name=\"").append(nodeID).append("\">");
         for (int item : activeSensors.keySet()) {
             switch (item) {
                 case TYPE_ACCELEROMETER:
-                    String aStr = "<Sensor Type=\""+ activeSensors.get(item).getName() + "\"";
+                    StringBuilder aStr = new StringBuilder("<Sensor Type=\"" + activeSensors.get(item).getName() + "\"");
                     for (String sVar : Accelerometer.keySet()){
-                        aStr = aStr + " " + sVar + "=\"" + Accelerometer.get(sVar) +"\"";
+                        aStr.append(" ").append(sVar).append("=\"").append(Accelerometer.get(sVar)).append("\"");
                     }
                     element.put(item, aStr + "/>");
                     break;
                 case TYPE_GRAVITY:
-                    String bStr = "<Sensor Type=\""+ activeSensors.get(item).getName() + "\"";
+                    StringBuilder bStr = new StringBuilder("<Sensor Type=\"" + activeSensors.get(item).getName() + "\"");
                     for (String sVar : Gravity.keySet()){
-                        bStr = bStr + " " +sVar + "=\"" + Gravity.get(sVar)+"\"";
+                        bStr.append(" ").append(sVar).append("=\"").append(Gravity.get(sVar)).append("\"");
                     }
                     element.put(item, bStr + "/>");
                     break;
                 case TYPE_GYROSCOPE:
-                    String cStr = "<Sensor Type=\""+ activeSensors.get(item).getName() + "\"";
+                    StringBuilder cStr = new StringBuilder("<Sensor Type=\"" + activeSensors.get(item).getName() + "\"");
                     for (String sVar : Gyroscope.keySet()){
-                        cStr = cStr + " " + sVar + "=\"" + Gyroscope.get(sVar)+"\"";
+                        cStr.append(" ").append(sVar).append("=\"").append(Gyroscope.get(sVar)).append("\"");
                     }
                     element.put(item, cStr + "/>");
                     break;
                 case TYPE_LINEAR_ACCELERATION:
-                    String dStr = "<Sensor Type=\""+ activeSensors.get(item).getName() + "\"";
+                    StringBuilder dStr = new StringBuilder("<Sensor Type=\"" + activeSensors.get(item).getName() + "\"");
                     for (String sVar : LinearAcceleration.keySet()){
-                        dStr = dStr + " " + sVar + "=\"" + LinearAcceleration.get(sVar)+"\"";
+                        dStr.append(" ").append(sVar).append("=\"").append(LinearAcceleration.get(sVar)).append("\"");
                     }
                     element.put(item, dStr + "/>");
                     break;
                 case TYPE_ROTATION_VECTOR:
-                    String eStr = "<Sensor Type=\""+ activeSensors.get(item).getName() + "\"";
+                    StringBuilder eStr = new StringBuilder("<Sensor Type=\"" + activeSensors.get(item).getName() + "\"");
                     for (String sVar : RotationVector.keySet()){
-                        eStr = eStr + " " + sVar + "=\"" + RotationVector.get(sVar)+"\"";
+                        eStr.append(" ").append(sVar).append("=\"").append(RotationVector.get(sVar)).append("\"");
                     }
                     element.put(item, eStr + "/>");
                     break;
                 case TYPE_USB:
-                    String fStr = "<Sensor Type=\""+ activeSensors.get(item).getName() + "\"";
+                    StringBuilder fStr = new StringBuilder("<Sensor Type=\"" + activeSensors.get(item).getName() + "\"");
                     for (String sVar : USB.keySet()){
-                        fStr = fStr + " " + sVar + "=\"" + USB.get(sVar)+"\"";
+                        fStr.append(" ").append(sVar).append("=\"").append(USB.get(sVar)).append("\"");
                     }
                     element.put(item, fStr + "/>");
                     break;
             }
         }
         for (int item : element.keySet()){
-            xml = xml + element.get(item);
+            xml.append(element.get(item));
         }
-        xml = xml + "<Timestamp Time= \"" + clockTime(TimeStamp) + "\"/>";
+        xml.append("<Timestamp Time= \"").append(clockTime(TimeStamp)).append("\"/>");
         //Close for well formed xml
         return xml + "</Node>";
     }

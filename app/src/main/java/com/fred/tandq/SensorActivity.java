@@ -95,7 +95,7 @@ public class SensorActivity extends AppCompatActivity {
             setsHandler(new sensorHandler());
         }
 
-        tDisp = (TextView) findViewById(R.id.time);
+        tDisp = findViewById(R.id.time);
         for (Integer item : nodeController.getNodeCtrl().getSensors().keySet()) {
                 setTVC(nodeController.getNodeCtrl().getSensors().get(item));
         }

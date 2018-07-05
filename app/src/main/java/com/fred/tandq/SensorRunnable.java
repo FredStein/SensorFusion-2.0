@@ -215,9 +215,7 @@ class SensorRunnable implements Runnable {
                 } else {
                     long binTs = mEpoch + halfTick;
                     publishEpoch(vAcc, counts, dtAcc, binTs);                           //Send total values, counts, dT total, timestamp (for middle of bin) to publisher
-                    for (int i = 0; i < nValues; i++) {                         //Reinitialise accumulator registers and reset counter
-                        vAcc[i] = event.values[i];
-                    }
+                    System.arraycopy(event.values, 0, vAcc, 0, nValues);
                     dtAcc = (tRx - ts);
                     counts = 1;
                     mEpoch = mEpoch + tickLength;
