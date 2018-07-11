@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/SensorHub"
         android:icon="@mipmap/sn_launcher"
-        android:name = ".nodeController">
+        android:name = "nodeController">
         <activity android:name=".MainActivity"
             android:icon="@mipmap/sn_launcher"
             android:launchMode="singleTop">

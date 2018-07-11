@@ -20,7 +20,6 @@ import com.felhr.usbserial.UsbSerialInterface;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static android.os.SystemClock.elapsedRealtime;
 
@@ -31,33 +30,30 @@ class usbRunnable implements Runnable {
     //flag for logging
     private static boolean mLogging = false ;
 
-    private AtomicBoolean startThread = new AtomicBoolean(false);
+    private  boolean runThread = false;
     public boolean isRunning(){
-        return startThread.get();
+        return runThread;
     }
-    public void setRunning(boolean running) {
-        this.startThread.set(running);
+    public void setRunning() {
+        runThread = true;
     }
-    public boolean stopMe(){
-        startThread.set(false);
-//        dataQW.stop();
-        return startThread.get();
+    public void stopRunning(){
+        runThread = false;
     }
-
     private SensorActivity.sensorHandler sHandler;
     private int sensorType;
     private mySensor fSensor;
-//    private udpQWriter dataQW;
     private LinkedBlockingQueue dQ;
-    private long mEpoch;
+    private long epoch;
     private int counts = 1;
     private float acc;
-    private String usbStr = "";
     private long tickLength;
     private long halfTick;
     private boolean upDateData = false;
     private boolean sendData = false;
+    private String usbStr;
     private usbListener mListener;
+    private nodeController nC;
 
     private final BroadcastReceiver txListener = new BroadcastReceiver() {
         @Override
@@ -65,7 +61,7 @@ class usbRunnable implements Runnable {
             switch (intent.getAction()) {
                 case SensorActivity.TOGGLE_DISPLAY:
                     upDateData = !upDateData;
-                    if (sHandler == null) sHandler = nodeController.getsHandler();
+                    if (sHandler == null) sHandler = nC.getsHandler();
                     break;
                 case SensorActivity.TOGGLE_SEND: // USB DISCONNECTED
                     sendData = !sendData;
@@ -76,21 +72,22 @@ class usbRunnable implements Runnable {
         }
     };
 
-    usbRunnable(mySensor mSensor, LinkedBlockingQueue dataQ){
+    usbRunnable(mySensor mSensor, LinkedBlockingQueue dataQ, long mEpoch, long tikLen, long halfTik, nodeController nC){
         if (mLogging) {
             String logString = "USB Thread created";
             Log.d(TAG, logString);
         }
         fSensor = mSensor;
         sensorType = mSensor.getType();
-        mEpoch = nodeController.getNodeCtrl().getEpoch();
-        tickLength = nodeController.getNodeCtrl().getTick();
-        halfTick = nodeController.getNodeCtrl().getHalfTick();
+        epoch = mEpoch;
+        tickLength = tikLen;
+        halfTick = halfTik;
 //        dataQW = new udpQWriter(dataQ);
         this.dQ = dataQ;
-        setFilters(txListener,nodeController.getNodeCtrl());
+        setFilters(txListener,nC);
+        usbStr = "";
         mListener = new usbListener();
-        nodeController.setusbCallback(mListener);
+        nC.setusbCallback(mListener);
     }
 
     @Override
@@ -99,12 +96,9 @@ class usbRunnable implements Runnable {
             String logString = "USB Thread Started";
             Log.d(TAG, logString);
         }
-        while(startThread.get()){
-/*            if (!dataQW.isRunning()){
-                dataQW.setRunning(true);
-                sensorDataTxThread = new Thread(dataQW);
-                sensorDataTxThread.start();
-            }*/
+
+        while(runThread){
+
         }
     }
 
@@ -143,39 +137,6 @@ class usbRunnable implements Runnable {
         return udpPkt;
     }
 
-/*    public class udpQWriter implements Runnable {
-        private AtomicBoolean running = new AtomicBoolean(false);
-        public boolean isRunning(){
-            return running.get();
-        }
-        public void setRunning(boolean running) {
-            this.running.set(running);
-        }
-        public void stop(){
-            running.set(false);
-        }
-
-        private LinkedBlockingQueue queue;
-        public udpQWriter(LinkedBlockingQueue q) {
-            queue = q;
-            if (mLogging) {
-                String logString = fSensor.getName()+" udpQWriter created";
-                Log.d(TAG, logString);
-            }
-        }
-
-        @Override
-        public void run() {                                                             //TODO Need thread stop condition
-            if (mLogging) {
-                String logString = fSensor.getName()+" udpQWriter started";
-                Log.d(TAG, logString);
-            }
-            while (running.get()) {
-            }
-            running.set(false);
-        }
-    }*/
-
     private void setFilters(BroadcastReceiver mReciever, Context context) {                     //USB Filter configuration and reciever registration
         IntentFilter filter = new IntentFilter();
         filter.addAction(SensorActivity.TOGGLE_DISPLAY);
@@ -190,6 +151,7 @@ class usbRunnable implements Runnable {
 
     public class usbListener implements UsbSerialInterface.UsbReadCallback {
 
+        @Override
         public void onReceivedData(byte[] arg0) {
             try {
                 String data = new String(arg0, "UTF-8");
@@ -199,8 +161,8 @@ class usbRunnable implements Runnable {
                     usbStr = usbStr + data;
                     String val = usbStr.split("m")[0].trim();
                     long ts = elapsedRealtime();
-                    if (ts >= mEpoch){
-                        if ( ts < mEpoch + tickLength) {
+                    if (ts >= epoch){
+                        if ( ts < epoch + tickLength) {
                             try{
                                 acc += Float.parseFloat(val);
                             } catch (NumberFormatException e){
@@ -208,11 +170,11 @@ class usbRunnable implements Runnable {
                             }
                             counts += 1;
                         } else {
-                            long binTs = mEpoch + halfTick;
+                            long binTs = epoch + halfTick;
                             publishEpoch(acc, counts, binTs);                           //Send total values, counts, timestamp (for middle of bin) to publisher
                             acc = Float.parseFloat(val);
                             counts = 1;
-                            mEpoch = mEpoch + tickLength;
+                            epoch = epoch + tickLength;
                         }
                     }
                     usbStr = "";

@@ -21,12 +21,14 @@ import android.widget.ToggleButton;
 
 import java.util.HashMap;
 
-import static com.fred.tandq.nodeController.getsHandler;
-import static com.fred.tandq.nodeController.isDisplayData;
-import static com.fred.tandq.nodeController.isSendUDP;
-import static com.fred.tandq.nodeController.setDisplayData;
-import static com.fred.tandq.nodeController.setSendUDP;
-import static com.fred.tandq.nodeController.setsHandler;
+import static com.fred.tandq.R.string.No_USB;
+import static com.fred.tandq.R.string.USB;
+import static com.fred.tandq.nodeController.ACTION_CDC_DRIVER_NOT_WORKING;
+import static com.fred.tandq.nodeController.ACTION_USB_DETACHED;
+import static com.fred.tandq.nodeController.ACTION_USB_DEVICE_NOT_WORKING;
+import static com.fred.tandq.nodeController.ACTION_USB_NOT_SUPPORTED;
+import static com.fred.tandq.nodeController.ACTION_USB_READY;
+
 
 public class SensorActivity extends AppCompatActivity {
     //tag for logging
@@ -34,40 +36,42 @@ public class SensorActivity extends AppCompatActivity {
     //flag for logging
     private static boolean mLogging = false;
 
+    private nodeController nC;
     public static final String TOGGLE_SEND = "toggle_display";
     public static final String TOGGLE_DISPLAY = "toggle_send";
     private ToggleButton displayData;
     private ToggleButton udpSend;
     private Menu appBarMenu;
+    private String appBarTitle;
     private TextView tDisp;
 
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
-                case SensorService.ACTION_USB_READY:
-                    nodeController.getNodeCtrl().setAppBarTitle(getString(R.string.USB));
-                    appBarMenu.getItem(0).setTitle(nodeController.getNodeCtrl().getAppBarTitle());         // Change indicator at top right
-                    for (Integer item : nodeController.getNodeCtrl().getSensors().keySet()) {
-                        setTVC(nodeController.getNodeCtrl().getSensors().get(item));
+                case ACTION_USB_READY:
+                    appBarTitle = getString(USB);
+                    appBarMenu.getItem(0).setTitle(appBarTitle);         // Change indicator at top right
+                    for (Integer item : nC.getSensors().keySet()) {
+                        setTVC(nC.getSensors().get(item));
                     }
                     break;
-                case SensorService.ACTION_USB_DISCONNECTED:
+                case ACTION_USB_DETACHED:
                     Toast.makeText(context, "USB disconnected", Toast.LENGTH_SHORT).show();
-                    nodeController.getNodeCtrl().setAppBarTitle(getString(R.string.No_USB));
-                    appBarMenu.getItem(0).setTitle(nodeController.getNodeCtrl().getAppBarTitle());         // Change indicator at top right
+                    appBarTitle = getString(No_USB);
+                    appBarMenu.getItem(0).setTitle(appBarTitle);         // Change indicator at top right
                     break;
-                case SensorService.ACTION_USB_NOT_SUPPORTED:
+                case ACTION_USB_NOT_SUPPORTED:
                     Toast nsToast = Toast.makeText(context, "USB device not supported", Toast.LENGTH_SHORT);
                     nsToast.setGravity(Gravity.TOP|Gravity.RIGHT, 0, 0);
                     nsToast.show();
                     break;
-                case SensorService.ACTION_CDC_DRIVER_NOT_WORKING:
+                case ACTION_CDC_DRIVER_NOT_WORKING:
                     Toast cdcToast = Toast.makeText(context, "CDC Driver not working", Toast.LENGTH_SHORT);
                     cdcToast.setGravity(Gravity.TOP|Gravity.RIGHT, 0, 0);
                     cdcToast.show();
                     break;
-                case SensorService.ACTION_USB_DEVICE_NOT_WORKING:
+                case ACTION_USB_DEVICE_NOT_WORKING:
                     Toast nwToast = Toast.makeText(context, "USB device not working", Toast.LENGTH_SHORT);
                     nwToast.setGravity(Gravity.TOP|Gravity.RIGHT, 0, 0);
                     nwToast.show();
@@ -83,6 +87,7 @@ public class SensorActivity extends AppCompatActivity {
             Log.d(TAG, logstring);
         }
         super.onCreate(savedInstanceState);
+        nC = (nodeController) getApplicationContext();
         setContentView(R.layout.activity_sensor);
 
         ActionBar ab = getSupportActionBar();
@@ -90,22 +95,22 @@ public class SensorActivity extends AppCompatActivity {
         ab.setDisplayUseLogoEnabled(true);
         ab.setDisplayShowHomeEnabled(true);
 
-        if (getsHandler() == null)
+        if (nC.getsHandler() == null)
         {
-            setsHandler(new sensorHandler());
+            nC.setsHandler(new sensorHandler(nC.getSensors()));
         }
 
         tDisp = findViewById(R.id.time);
-        for (Integer item : nodeController.getNodeCtrl().getSensors().keySet()) {
-                setTVC(nodeController.getNodeCtrl().getSensors().get(item));
+        for (Integer item : nC.getSensors().keySet()) {
+                setTVC(nC.getSensors().get(item));
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.a_bar_menu_sa, menu);                  // Inflate the menu
-        this.appBarMenu = menu;
-        menu.getItem(0).setTitle(nodeController.getNodeCtrl().getAppBarTitle());;
+        appBarMenu = menu;
+        menu.getItem(0).setTitle(appBarTitle);;
         return true;
     }
 
@@ -116,7 +121,6 @@ public class SensorActivity extends AppCompatActivity {
             Log.d(TAG, logstring);
         }
         super.onStart();
-
     }
 
     @Override
@@ -138,7 +142,7 @@ public class SensorActivity extends AppCompatActivity {
         }
         super.onResume();                                                                       // Start listening for notifications from UsbService
         setFilters(mUsbReceiver,this);
-        ((ToggleButton) findViewById(R.id.SendData)).setChecked(isSendUDP());
+        ((ToggleButton) findViewById(R.id.SendData)).setChecked(nC.isSendUDP());
     }
 
     @Override
@@ -148,8 +152,8 @@ public class SensorActivity extends AppCompatActivity {
             Log.d(TAG, logstring);
         }        super.onPause();
         unregisterReceiver(mUsbReceiver);
-        if (isDisplayData()){
-            setDisplayData(false);
+        if (nC.isDisplayData()){
+            nC.setDisplayData(false);
             ((ToggleButton) findViewById(R.id.DisplayData)).setChecked(false);
             this.sendBroadcast(new Intent(TOGGLE_DISPLAY));
         }
@@ -160,9 +164,9 @@ public class SensorActivity extends AppCompatActivity {
         Intent dispIntent = new Intent(TOGGLE_DISPLAY);
         this.sendBroadcast(dispIntent);
         if (checked) {
-            setDisplayData(true);
+            nC.setDisplayData(true);
         } else {
-            setDisplayData(false);
+            nC.setDisplayData(false);
         }
     }
 
@@ -170,13 +174,18 @@ public class SensorActivity extends AppCompatActivity {
         boolean checked = ((ToggleButton)view).isChecked();
         this.sendBroadcast(new Intent(TOGGLE_SEND));
         if (checked) {
-            setSendUDP(true);
+            nC.setSendUDP(true);
         } else {
-            setSendUDP(false);
+            nC.setSendUDP(false);
         }
     }
 
     public class sensorHandler extends Handler {
+        HashMap<Integer, mySensor> mSensors;
+
+        sensorHandler(HashMap<Integer, mySensor> sensors){
+            mSensors = sensors;
+        }
         @Override
         public void handleMessage(Message msg) {
             //:Param msg.obj    HashMap of CORRECTLY FORMATTED formatted strings
@@ -185,7 +194,7 @@ public class SensorActivity extends AppCompatActivity {
             int sensor = msg.what;
             for (String key : sData.keySet()) {
                 if (!key.equals("Timestamp")){
-                    TextView tv = nodeController.getNodeCtrl().getSensors().get(sensor).getTextView(key);
+                    TextView tv = mSensors.get(sensor).getTextView(key);
                     if (tv != null){
                         tv.setText(sData.get(key));
                     }
@@ -197,11 +206,11 @@ public class SensorActivity extends AppCompatActivity {
 
     private void setFilters(BroadcastReceiver usbReciever, Context context) {                     //USB Filter configuration and receiver registration
         IntentFilter filter = new IntentFilter();
-        filter.addAction(SensorService.ACTION_USB_READY);
-        filter.addAction(SensorService.ACTION_USB_DISCONNECTED);
-        filter.addAction(SensorService.ACTION_USB_NOT_SUPPORTED);
-        filter.addAction(SensorService.ACTION_CDC_DRIVER_NOT_WORKING);
-        filter.addAction(SensorService.ACTION_USB_DEVICE_NOT_WORKING);
+        filter.addAction(ACTION_USB_READY);
+        filter.addAction(ACTION_USB_DETACHED);
+        filter.addAction(ACTION_USB_NOT_SUPPORTED);
+        filter.addAction(ACTION_CDC_DRIVER_NOT_WORKING);
+        filter.addAction(ACTION_USB_DEVICE_NOT_WORKING);
         context.registerReceiver(usbReciever, filter);
     }
 
